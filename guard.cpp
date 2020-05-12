@@ -99,6 +99,9 @@ int main(int argc, char** argv)
         app.add_flag("-v, --version", gversion, "Version of GUARD tool");
 
         CLI11_PARSE(app, argc, argv);
+
+        init_libguard();
+
         if (createGuardStr)
         {
             guardCreate(*createGuardStr);

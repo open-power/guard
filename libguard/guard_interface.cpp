@@ -9,6 +9,10 @@
 #include "guard_log.hpp"
 #include "include/guard_record.hpp"
 
+#ifdef DEV_TREE
+#include "phal_devtree.hpp"
+#endif /* DEV_TREE */
+
 #include <cstring>
 
 namespace openpower
@@ -239,6 +243,18 @@ void clearAll()
         file.erase(pos + headerSize, file.size());
     }
 }
+
+void init_libguard()
+{
+#ifdef DEV_TREE
+
+    openpower::guard::log::guard_log(GUARD_INFO,
+                                     "Using power system device tree");
+    openpower::guard::phal::initPHAL();
+
+#endif /* DEV_TREE */
+}
+
 namespace utest
 {
 void setGuardFile(const fs::path& file)

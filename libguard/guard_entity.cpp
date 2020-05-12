@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
+#include "config.h"
+
 #include "guard_entity.hpp"
 
 #include "guard_entity_map.hpp"
+
+#ifdef DEV_TREE
+#include "phal_devtree.hpp"
+#endif /* DEV_TREE */
 
 namespace openpower
 {
@@ -9,23 +15,22 @@ namespace guard
 {
 std::optional<EntityPath> getEntityPath(const std::string& physicalPath)
 {
-#ifdef PHAL
-    // TODO: use device tree
-#else
+#ifdef DEV_TREE
+
+    return openpower::guard::phal::getEntityPathFromDevTree(physicalPath);
+
+#else  // from custom list
     auto it = physicalEntityPathMap.find(physicalPath);
     if (it != physicalEntityPathMap.end())
     {
         return it->second;
     }
-#endif
     return std::nullopt;
+#endif /* DEV_TREE */
 }
 
 std::optional<std::string> getPhysicalPath(const EntityPath& entityPath)
 {
-#ifdef PHAL
-    // TODO: use device tree
-#else
     for (auto i : physicalEntityPathMap)
     {
         if (i.second == entityPath)
@@ -33,7 +38,6 @@ std::optional<std::string> getPhysicalPath(const EntityPath& entityPath)
             return i.first;
         }
     }
-#endif
     return std::nullopt;
 }
 

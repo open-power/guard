@@ -25,3 +25,7 @@ option('GUARD_DBG', type : 'integer',
         value : 3,
         description : 'GUARD loglevel for debug log'
       )
+
+option('devtree', type: 'feature', value : 'disabled',
+        description : '''Enable to get physical path value from
+                         power system device tree''')

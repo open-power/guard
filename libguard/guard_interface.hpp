@@ -44,6 +44,13 @@ void clear(const EntityPath& entityPath);
  */
 void clearAll();
 
+/**
+ * @brief To init libguard library and its depends library if required
+ *
+ * @return void
+ */
+void init_libguard();
+
 namespace utest
 {
 void setGuardFile(const fs::path& file);

@@ -6,6 +6,10 @@ Need `meson` and `ninja`. Alternatively, source an OpenBMC ARM/x86 SDK.
 ```
 meson build && ninja -C build
 ```
+To use power system device for guard FRU's.
+```
+meson build -Ddevtree=enabled && ninja -C build
+```
 ## To run unit tests
 Tests can be run in the CI docker container, or with an OpenBMC x86 sdk(see
 below for x86 steps).

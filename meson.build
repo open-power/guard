@@ -1,5 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-project('guard', ['cpp'],
+# Adding "c" in languages list of project api because dependency library
+# (libpdbg - to use device tree) implemented in c and meson throwing error
+# for that.
+# libguard/meson.build:1:0: ERROR: Tried to access compiler for unspecified
+# language "c".
+project('guard', ['cpp', 'c'],
         version: '0.1', meson_version: '>=0.49.0',
         default_options: [
           'warning_level=3',
@@ -32,13 +37,16 @@ conf_data.set('GUARD_DBG', get_option('GUARD_DBG'),
                       description : 'GUARD loglevel for debug log'
                     )
 
+conf_data.set('DEV_TREE', get_option('devtree').enabled(),
+              description : 'Use device tree to get physical path value'
+             )
+
 configure_file(output: 'config.h',
   configuration: conf_data
 )
 
 #add_project_arguments('-DPGUARD', language : 'cpp')
 add_project_arguments('-DGUARD_VERSION', language : 'cpp')
-#add_project_arguments('-DPHAL', language : 'cpp')
 set_variable('GUARD_VERSION', '1.0')
 
 subdir('libguard')
