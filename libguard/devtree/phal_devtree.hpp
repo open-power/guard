@@ -61,6 +61,32 @@ int pdbgCallbackToGetPhysicalBinaryPath(struct pdbg_target* target, void* priv);
  */
 std::optional<EntityPath>
     getEntityPathFromDevTree(const std::string& physicalPath);
+
+/**
+ * @brief To get physical path from device tree
+ *
+ * pdbg callback function to get physical path from device tree
+ * by using entity path raw data becuase guard doesn't know target
+ * class name for given entity path
+ *
+ * @param[in] target current target
+ * @param[in] priv private data assoicated with callback function. not used
+ * @return 0 to continue traverse, non-zero to stop traverse
+ */
+int pdbgCallbackToGetPhysicalPath(struct pdbg_target* target, void* priv);
+
+/**
+ * @brief Get physical path from device tree by using EntityPath value
+ *
+ * Used to get physical path string format value by using physical path
+ * raw data which is defined in device tree and the raw data is getting by
+ * using entity path type value.
+ *
+ * @param[in] entityPath to pass entity path value
+ * @return Physical path if found in device tree else NULL
+ */
+std::optional<std::string>
+    getPhysicalPathFromDevTree(const EntityPath& entityPath);
 } // namespace phal
 } // namespace guard
 } // namespace openpower

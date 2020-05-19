@@ -216,6 +216,134 @@ std::optional<EntityPath>
 
     return entityPath;
 }
+
+int pdbgCallbackToGetPhysicalPath(struct pdbg_target* target,
+                                  void* /*priv - unused*/)
+{
+    ATTR_PHYS_BIN_PATH_Type physBinaryPath;
+    /**
+     * TODO: Issue: phal/pdata#16
+     * Should not use direct pdbg api to read attribute. Need to use
+     * DT_GET_PROP but, libdt-api printing "pdbg_target_get_attribute failed"
+     * for failure case and in guard case it expected trace because, doing
+     * target iteration to get actual ATTR_PHYS_BIN_PATH value. So, Due to
+     * this error trace user will get confusion while listing guard records.
+     * Hence using pdbg api to avoid trace until libdt-api providing log
+     * level setup.
+     */
+    if (!pdbg_target_get_attribute(
+            target, "ATTR_PHYS_BIN_PATH",
+            std::stoi(dtAttr::fapi2::ATTR_PHYS_BIN_PATH_Spec),
+            dtAttr::fapi2::ATTR_PHYS_BIN_PATH_ElementCount, physBinaryPath))
+    {
+        /**
+         * Continue target traversal if ATTR_PHYS_BIN_PATH
+         * attribute not found.
+         */
+        return continueTgtTraversal;
+    }
+
+    for (size_t i = 0; i < sizeof(g_physBinaryPath); i++)
+    {
+        if (g_physBinaryPath[i] != physBinaryPath[i])
+        {
+            /**
+             * Continue target traversal if ATTR_PHYS_BIN_PATH
+             * attribute value is not matched with given physical path
+             * binary format value.
+             */
+            return continueTgtTraversal;
+        }
+    }
+
+    /**
+     * The ATTR_PHYS_BIN_PATH attribute value is matched with given
+     * physical path binary format value. so, getting physical path
+     * value by using ATTR_PHYS_DEV_PATH attribute from same target
+     * property list.
+     */
+    // clear old value in g_physStringPath
+    std::memset(g_physStringPath, 0, sizeof(g_physStringPath));
+
+    if (DT_GET_PROP(ATTR_PHYS_DEV_PATH, target, g_physStringPath))
+    {
+        /**
+         * Stopping the target traversal if ATTR_PHYS_DEV_PATH
+         * attribute not found within ATTR_PHYS_BIN_PATH attribute
+         * target property list
+         */
+        return requireAttrNotFound;
+    }
+    else
+    {
+        /**
+         * Found the physical path value from device tree by using
+         * given physical path binary value.
+         */
+        return requireAttrFound;
+    }
+}
+
+std::optional<std::string>
+    getPhysicalPathFromDevTree(const EntityPath& entityPath)
+{
+    /**
+     * The callback function (pdbgCallbackToGetPhysicalPath) will use
+     * the given physical binary path from g_physBinaryPath variable.
+     * so, clearing old value in g_physBinaryPath.
+     */
+    std::memset(g_physBinaryPath, 0, sizeof(g_physBinaryPath));
+
+    if (sizeof(EntityPath) > sizeof(g_physBinaryPath))
+    {
+        log::guard_log(
+            GUARD_ERROR,
+            "Physical path binary size mismatch with devtree[%zu] guard[%zu]",
+            sizeof(g_physBinaryPath), sizeof(EntityPath));
+        return std::nullopt;
+    }
+
+    int rdIndex = 0;
+    g_physBinaryPath[rdIndex++] = entityPath.type_size;
+
+    /**
+     * Path elements size stored at last 4bits in type_size member.
+     * For every iteration, increasing 2 byte to store PathElement value
+     * i.e target type enum value and instance id as raw data.
+     *
+     * @note PathElement targetType and instance member data type are
+     * uint8_t. so, directly assiging each value as one byte to make
+     * raw data (binary) format. If data type are changed for those fields
+     * in PathElements then this logic also need to revisit.
+     */
+    for (int i = 0; i < (0x0F & entityPath.type_size);
+         i++, rdIndex += sizeof(entityPath.pathElements[0]))
+    {
+        g_physBinaryPath[rdIndex] = entityPath.pathElements[i].targetType;
+        g_physBinaryPath[rdIndex + 1] = entityPath.pathElements[i].instance;
+    }
+
+    int ret = pdbg_traverse(
+        nullptr /* Passing NULL to start target traversal from root */,
+        pdbgCallbackToGetPhysicalPath,
+        nullptr /* No application private data, so passing NULL */);
+
+    if (ret == 0)
+    {
+        log::guard_log(
+            GUARD_ERROR,
+            "Given binary physical path not found in power system device tree");
+        return std::nullopt;
+    }
+    else if (ret == requireAttrNotFound)
+    {
+        log::guard_log(GUARD_ERROR, "String value for binary physical path is "
+                                    "not found in device tree");
+        return std::nullopt;
+    }
+
+    return std::string(g_physStringPath, sizeof(g_physStringPath));
+}
 } // namespace phal
 } // namespace guard
 } // namespace openpower

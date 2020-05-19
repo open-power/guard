@@ -31,6 +31,11 @@ std::optional<EntityPath> getEntityPath(const std::string& physicalPath)
 
 std::optional<std::string> getPhysicalPath(const EntityPath& entityPath)
 {
+#ifdef DEV_TREE
+
+    return openpower::guard::phal::getPhysicalPathFromDevTree(entityPath);
+
+#else  // from custom list
     for (auto i : physicalEntityPathMap)
     {
         if (i.second == entityPath)
@@ -39,6 +44,7 @@ std::optional<std::string> getPhysicalPath(const EntityPath& entityPath)
         }
     }
     return std::nullopt;
+#endif /* DEV_TREE */
 }
 
 std::optional<std::string> pathTypeToString(const int pType)
