@@ -2,9 +2,14 @@
 #pragma once
 #include <stdarg.h>
 
-#define GUARD_ERROR 1
-#define GUARD_INFO 2
-#define GUARD_DEBUG 3
+#define GUARD_EMERG 0
+#define GUARD_ALERT 1
+#define GUARD_CRIT 2
+#define GUARD_ERROR 3
+#define GUARD_WARNING 4
+#define GUARD_NOTICE 5
+#define GUARD_INFO 6
+#define GUARD_DEBUG 7
 
 namespace openpower
 {
