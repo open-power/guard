@@ -11,21 +11,12 @@ option('GUARD_PRSV_PATH', type : 'string',
         description : 'GUARD file path in prsv partition'
       )
 
-option('GUARD_ERR', type : 'integer',
-        value : 1,
-        description : 'GUARD loglevel for error-case log'
-      )
-
-option('GUARD_INF', type : 'integer',
-        value : 2,
-        description : 'GUARD loglevel for informational log'
-      )
-
-option('GUARD_DBG', type : 'integer',
-        value : 3,
-        description : 'GUARD loglevel for debug log'
-      )
-
 option('devtree', type: 'feature', value : 'disabled',
         description : '''Enable to get physical path value from
                          power system device tree''')
+
+# Log level: 0 - Emergency, 1 - Alert, 2 - Critical, 3 - Error,
+#            4 - Warning, 5 - Notice, 6 - Info, 7 - Debug
+option('verbose', type: 'combo',
+       choices : ['0', '1', '2', '3', '4', '5', '6', '7'],
+       value : '3', description : 'Use to pass verbose level for trace')

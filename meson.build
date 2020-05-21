@@ -27,19 +27,13 @@ conf_data.set_quoted('GUARD_RO_PATH', get_option('GUARD_RO_PATH'),
 conf_data.set_quoted('GUARD_PRSV_PATH', get_option('GUARD_PRSV_PATH'),
                       description : 'GUARD file in pnor prsv partition'
                     )
-conf_data.set('GUARD_ERR', get_option('GUARD_ERR'),
-                      description : 'GUARD loglevel for error-case log'
-                    )
-conf_data.set('GUARD_INF', get_option('GUARD_INF'),
-                      description : 'GUARD loglevel for informational log'
-                    )
-conf_data.set('GUARD_DBG', get_option('GUARD_DBG'),
-                      description : 'GUARD loglevel for debug log'
-                    )
 
 conf_data.set('DEV_TREE', get_option('devtree').enabled(),
               description : 'Use device tree to get physical path value'
              )
+
+conf_data.set('VERBOSE_LEVEL', get_option('verbose'),
+              description : 'Build time log level for trace')
 
 configure_file(output: 'config.h',
   configuration: conf_data

@@ -14,23 +14,18 @@ namespace log
 
 void guard_log(int loglevel, const char* fmt, ...)
 {
-    va_list ap;
+    if (VERBOSE_LEVEL < loglevel)
+    {
+        return;
+    }
 
+    va_list ap;
     va_start(ap, fmt);
-    if (loglevel == GUARD_ERR)
-    {
-        vprintf(fmt, ap);
-    }
-    else if (loglevel == GUARD_INF)
-    {
-        vprintf(fmt, ap);
-    }
-    else if (loglevel == GUARD_DBG)
-    {
-        vprintf(fmt, ap);
-    }
-    va_end(ap);
+
+    vprintf(fmt, ap);
     std::cout << "\n";
+
+    va_end(ap);
 }
 
 } // namespace log
