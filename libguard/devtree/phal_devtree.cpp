@@ -19,7 +19,7 @@ namespace log = openpower::guard::log;
  * Used to return in callback function which are used to get
  * physical path value and it binary format value.
  *
- * The value for constexpr defined based on pdbg_traverse function usage.
+ * The value for constexpr defined based on pdbg_target_traverse function usage.
  */
 constexpr int continueTgtTraversal = 0;
 constexpr int requireAttrFound = 1;
@@ -162,7 +162,7 @@ std::optional<EntityPath>
     std::strncpy(g_physStringPath, l_physicalPath.c_str(),
                  sizeof(g_physStringPath));
 
-    int ret = pdbg_traverse(
+    int ret = pdbg_target_traverse(
         nullptr /* Passing NULL to start target traversal from root */,
         pdbgCallbackToGetPhysicaBinaryPath,
         nullptr /* No application private data, so passing NULL */);
@@ -323,7 +323,7 @@ std::optional<std::string>
         g_physBinaryPath[rdIndex + 1] = entityPath.pathElements[i].instance;
     }
 
-    int ret = pdbg_traverse(
+    int ret = pdbg_target_traverse(
         nullptr /* Passing NULL to start target traversal from root */,
         pdbgCallbackToGetPhysicalPath,
         nullptr /* No application private data, so passing NULL */);
