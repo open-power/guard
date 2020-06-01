@@ -18,6 +18,10 @@ namespace fs = std::filesystem;
  * @param[in] eId errorlog ID
  * @param[in] eType errorlog type
  * @return NULL
+ *
+ * @note EntityPath provided conversion constructor so, same api can use to pass
+ * array of uint8_t buffer and conversion constructor automatically will take
+ * care conversion from raw data to EntityPath.
  */
 void create(const EntityPath& entityPath, uint32_t eId = 0,
             uint8_t eType = 0xD2);
@@ -34,6 +38,10 @@ GuardRecords getAll();
  *
  * @param[in] entityPath entity path
  * @return NULL
+ *
+ * @note EntityPath provided conversion constructor so, same api can use to pass
+ * array of uint8_t buffer and conversion constructor automatically will take
+ * care conversion from raw data to EntityPath.
  */
 void clear(const EntityPath& entityPath);
 

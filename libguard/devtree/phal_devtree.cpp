@@ -190,31 +190,7 @@ std::optional<EntityPath>
         return std::nullopt;
     }
 
-    /**
-     * The assumption is, in given raw data first byte contains path type
-     * and size of path elements as 2 x 4 bitfields representation.
-     */
-    EntityPath entityPath;
-    entityPath.type_size = g_physBinaryPath[0];
-
-    uint8_t pathElementsSize = (entityPath.type_size & 0x0F);
-    if (pathElementsSize > EntityPath::maxPathElements)
-    {
-        log::guard_log(
-            GUARD_ERROR,
-            "Path elements size mismatch with devtree[%u] guard max size[%d]",
-            pathElementsSize, EntityPath::maxPathElements);
-        return std::nullopt;
-    }
-
-    for (int i = 0, j = 1 /* To ignore first byte (type_size) from raw data */;
-         i < pathElementsSize; i++, j += sizeof(entityPath.pathElements[0]))
-    {
-        entityPath.pathElements[i].targetType = g_physBinaryPath[j];
-        entityPath.pathElements[i].instance = g_physBinaryPath[j + 1];
-    }
-
-    return entityPath;
+    return EntityPath(reinterpret_cast<uint8_t*>(g_physBinaryPath));
 }
 
 int pdbgCallbackToGetPhysicalPath(struct pdbg_target* target,
