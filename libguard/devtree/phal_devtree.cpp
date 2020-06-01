@@ -53,6 +53,17 @@ void initPHAL()
     }
 }
 
+/**
+ * @brief To get physical path binary value from device tree
+ *
+ * pdbg callback function used to get physical path binary value from
+ * device tree by using physical path becuase guard doesn't know target
+ * class name for given physical path.
+ *
+ * @param[in] target current target
+ * @param[in] priv private data assoicated with callback function. not used
+ * @return 0 to continue traverse, non-zero to stop traverse
+ */
 int pdbgCallbackToGetPhysicaBinaryPath(struct pdbg_target* target,
                                        void* /*priv - unused*/)
 {
@@ -193,6 +204,17 @@ std::optional<EntityPath>
     return EntityPath(reinterpret_cast<uint8_t*>(g_physBinaryPath));
 }
 
+/**
+ * @brief To get physical path from device tree
+ *
+ * pdbg callback function to get physical path from device tree
+ * by using entity path raw data becuase guard doesn't know target
+ * class name for given entity path
+ *
+ * @param[in] target current target
+ * @param[in] priv private data assoicated with callback function. not used
+ * @return 0 to continue traverse, non-zero to stop traverse
+ */
 int pdbgCallbackToGetPhysicalPath(struct pdbg_target* target,
                                   void* /*priv - unused*/)
 {

@@ -37,19 +37,6 @@ namespace phal
 void initPHAL();
 
 /**
- * @brief To get physical path binary value from device tree
- *
- * pdbg callback function used to get physical path binary value from
- * device tree by using physical path becuase guard doesn't know target
- * class name for given physical path.
- *
- * @param[in] target current target
- * @param[in] priv private data assoicated with callback function. not used
- * @return 0 to continue traverse, non-zero to stop traverse
- */
-int pdbgCallbackToGetPhysicalBinaryPath(struct pdbg_target* target, void* priv);
-
-/**
  * @brief Get entity path value from device tree
  *
  * Used to get entity path format value by using raw data which is defined
@@ -61,19 +48,6 @@ int pdbgCallbackToGetPhysicalBinaryPath(struct pdbg_target* target, void* priv);
  */
 std::optional<EntityPath>
     getEntityPathFromDevTree(const std::string& physicalPath);
-
-/**
- * @brief To get physical path from device tree
- *
- * pdbg callback function to get physical path from device tree
- * by using entity path raw data becuase guard doesn't know target
- * class name for given entity path
- *
- * @param[in] target current target
- * @param[in] priv private data assoicated with callback function. not used
- * @return 0 to continue traverse, non-zero to stop traverse
- */
-int pdbgCallbackToGetPhysicalPath(struct pdbg_target* target, void* priv);
 
 /**
  * @brief Get physical path from device tree by using EntityPath value
