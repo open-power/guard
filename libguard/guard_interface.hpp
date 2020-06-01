@@ -57,7 +57,7 @@ void clearAll();
  *
  * @return void
  */
-void init_libguard();
+void libguard_init();
 
 namespace utest
 {

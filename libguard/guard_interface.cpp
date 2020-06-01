@@ -101,7 +101,6 @@ int guardNext(GuardFile& file, int pos, GuardRecord& guard)
 
 void create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
 {
-    initialize();
 
     //! check if guard record already exists
     int pos = 0;
@@ -166,8 +165,6 @@ void create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
 
 GuardRecords getAll()
 {
-    initialize();
-
     GuardRecords guardRecords;
     GuardRecord curRecord;
     int pos = 0;
@@ -183,8 +180,6 @@ GuardRecords getAll()
 
 void clear(const EntityPath& entityPath)
 {
-    initialize();
-
     int pos = 0;
     int delpos = 0;
     int lastPos = 0;
@@ -226,8 +221,6 @@ void clear(const EntityPath& entityPath)
 
 void clearAll()
 {
-    initialize();
-
     GuardRecord guard;
 
     memset(&guard, 0, sizeof(guard));
@@ -244,8 +237,10 @@ void clearAll()
     }
 }
 
-void init_libguard()
+void libguard_init()
 {
+    initialize();
+
 #ifdef DEV_TREE
 
     openpower::guard::log::guard_log(GUARD_INFO,
