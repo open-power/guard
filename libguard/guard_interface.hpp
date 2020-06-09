@@ -55,9 +55,11 @@ void clearAll();
 /**
  * @brief To init libguard library and its depends library if required
  *
+ * @param[in] guardInit default true incase device tree is already
+ *            initialized need to set false.
  * @return void
  */
-void libguard_init();
+void libguard_init(bool guardInit = true);
 
 namespace utest
 {
