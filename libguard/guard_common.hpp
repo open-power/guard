@@ -4,6 +4,7 @@
 #include "guard_log.hpp"
 
 #include <array>
+#include <cstdint>
 
 namespace openpower
 {
