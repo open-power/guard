@@ -53,11 +53,19 @@ void clear(const EntityPath& entityPath);
 void clearAll();
 
 /**
- * @brief To init libguard library and its depends library if required
+ * @brief To initialize libguard
  *
+ * This function is used to get guard file which is used to maintain
+ * faulty replaceable units (FRUs) and also used to initialize power
+ * system device tree if required.
+ *
+ * @param[in] enableDevtree used to decide if libguard need to
+ *            initialize device tree or not, default is true.
  * @return void
+ *
+ * @note device tree initialization should happen once.
  */
-void libguard_init();
+void libguard_init(bool enableDevtree = true);
 
 namespace utest
 {

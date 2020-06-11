@@ -237,15 +237,18 @@ void clearAll()
     }
 }
 
-void libguard_init()
+void libguard_init(bool enableDevtree)
 {
     initialize();
-
+    guard_log(GUARD_DEBUG, "Device tree is set to %d", enableDevtree);
 #ifdef DEV_TREE
 
-    openpower::guard::log::guard_log(GUARD_INFO,
-                                     "Using power system device tree");
-    openpower::guard::phal::initPHAL();
+    if (enableDevtree)
+    {
+        openpower::guard::log::guard_log(GUARD_INFO,
+                                         "Using power system device tree");
+        openpower::guard::phal::initPHAL();
+    }
 
 #endif /* DEV_TREE */
 }
