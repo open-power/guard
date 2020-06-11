@@ -1,11 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
-headers = [
+headers_include =[
+  'include/guard_record.hpp'
+]
+
+headers_libguard = [
   'guard_interface.hpp',
   'guard_file.hpp',
   'guard_entity.hpp',
   'guard_log.hpp',
   'guard_common.hpp',
-  'include/guard_record.hpp'
+]
+
+headers = [
+  headers_include,
+  headers_libguard
 ]
 
 sources = [
@@ -27,8 +35,12 @@ if get_option('devtree').enabled()
 endif
 
 install_headers(
-  headers,
+  headers_libguard,
   subdir: 'libguard')
+
+install_headers(
+  headers_include,
+  subdir: 'libguard/include')
 
 libguard = library(
   'guard',
