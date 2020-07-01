@@ -7,6 +7,8 @@
 #include <cstring>
 #include <stdexcept>
 
+#include "attributes_info.H"
+
 namespace openpower
 {
 namespace guard

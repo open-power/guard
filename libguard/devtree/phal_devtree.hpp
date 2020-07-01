@@ -21,8 +21,6 @@
 
 #include <optional>
 
-#include "attributes_info.H"
-
 namespace openpower
 {
 namespace guard
