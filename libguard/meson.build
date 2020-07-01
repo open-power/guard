@@ -28,7 +28,6 @@ libguard_headers = ['.', '..']
 if get_option('devtree').enabled()
     libpdbg = meson.get_compiler('c').find_library('libpdbg')
     libdtapi = dependency('libdt-api')
-    headers += 'devtree/phal_devtree.hpp'
     sources += 'devtree/phal_devtree.cpp'
     libguard_headers += include_directories('devtree')
     devtree_deps = [ libpdbg, libdtapi ]
