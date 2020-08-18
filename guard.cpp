@@ -87,7 +87,10 @@ int main(int argc, char** argv)
         bool clearAll = false;
         bool gversion = false;
 
-        app.set_help_flag("-h, --help", "Use the below listed functions.");
+        app.set_help_flag("-h, --help",
+                          "Use the below listed functions.\n"
+                          "Warning: Don't try guard on non guardable units "
+                          "(sys, perv)");
         app.add_option("-c, --create", createGuardStr,
                        "Create GUARD record, expects physical path as input");
         app.add_option("-d, --delete", deleteGuardStr,
