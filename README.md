@@ -35,8 +35,8 @@ Usage: guard [OPTIONS]
 
 Options:
   -h,--help              Use the below listed functions.
-                         Warning: Don't guard non guardable units i.e. sys
-                         and perv
+                         Warning: Don't try guard on non guardable units
+                         (sys, perv)
   -c,--create TEXT       Create GUARD record, expects physical path as input.
   -d,--delete TEXT       Delete GUARD record, expects physical path as input.
   -l,--list              Listing of GUARDed resources.
