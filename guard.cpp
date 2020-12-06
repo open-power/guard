@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "libguard/guard_interface.hpp"
+#include "libguard/include/guard_record.hpp"
 
 #include <CLI/CLI.hpp>
 
@@ -17,28 +18,31 @@ void guardList()
     std::cout << "ID       | ERROR    |  Type  | Path " << std::endl;
     for (const auto& elem : records)
     {
-        std::cout << std::hex << std::setw(8) << std::setfill('0')
-                  << elem.recordId;
-        std::cout << " | ";
-        std::cout << std::hex << std::setw(8) << std::setfill('0')
-                  << elem.elogId;
+        if (elem.errType != GARD_Reconfig)
+        {
+            std::cout << std::hex << std::setw(8) << std::setfill('0')
+                      << elem.recordId;
+            std::cout << " | ";
+            std::cout << std::hex << std::setw(8) << std::setfill('0')
+                      << elem.elogId;
 
-        std::cout << " | ";
-        std::optional<std::string> gReasonToStr =
-            guardReasonToStr(elem.errType);
-        std::cout << *gReasonToStr;
-        std::cout << " | ";
-        std::optional<std::string> physicalPath =
-            getPhysicalPath(elem.targetId);
-        if (!physicalPath)
-        {
-            std::cout << "Unknown ";
+            std::cout << " | ";
+            std::optional<std::string> gReasonToStr =
+                guardReasonToStr(elem.errType);
+            std::cout << *gReasonToStr;
+            std::cout << " | ";
+            std::optional<std::string> physicalPath =
+                getPhysicalPath(elem.targetId);
+            if (!physicalPath)
+            {
+                std::cout << "Unknown ";
+            }
+            else
+            {
+                std::cout << *physicalPath;
+            }
+            std::cout << std::endl;
         }
-        else
-        {
-            std::cout << *physicalPath;
-        }
-        std::cout << std::endl;
     }
 }
 

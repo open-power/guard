@@ -106,6 +106,7 @@ void create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
     int pos = 0;
     int lastPos = 0;
     uint32_t maxId = 0;
+    uint32_t offset = 0;
     GuardRecord existGuard;
     memset(&existGuard, 0xff, sizeof(existGuard));
 
@@ -114,9 +115,20 @@ void create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
     {
         if (existGuard.targetId == entityPath)
         {
-            guard_log(
-                GUARD_ERROR,
-                "Already guard record is available in the GUARD partition");
+            if (existGuard.errType == GARD_Reconfig)
+            {
+                offset = lastPos * sizeof(existGuard);
+                existGuard.errType = eType;
+                existGuard.recordId = htobe32(lastPos + 1);
+                file.write(offset + headerSize, &existGuard,
+                           sizeof(existGuard));
+            }
+            else
+            {
+                guard_log(
+                    GUARD_ERROR,
+                    "Already guard record is available in the GUARD partition");
+            }
             return;
         }
         //! find the largest record ID
@@ -131,7 +143,7 @@ void create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
     if (isBlankRecord(existGuard))
     {
         GuardRecord guard;
-        uint32_t offset = lastPos * sizeof(guard);
+        offset = lastPos * sizeof(guard);
         memset(&guard, 0xff, sizeof(guard));
         guard.recordId = htobe32(maxId + 1);
         guard.errType = eType;
@@ -221,6 +233,7 @@ void clear(const EntityPath& entityPath)
 
 void clearAll()
 {
+    GuardRecords guardRecords;
     GuardRecord guard;
 
     memset(&guard, 0, sizeof(guard));
@@ -233,7 +246,23 @@ void clearAll()
     else
     {
         int pos = 0;
+        for_each_guard(file, pos, guard)
+        {
+            if (guard.errType == GARD_Reconfig)
+            {
+                guardRecords.push_back(guard);
+            }
+        }
+
         file.erase(pos + headerSize, file.size());
+        pos = 0;
+        for (auto& elem : guardRecords)
+        {
+            uint32_t offset = pos * sizeof(guard);
+            elem.recordId = htobe32(pos + 1);
+            file.write(offset + headerSize, &elem, sizeof(guard));
+            pos++;
+        }
     }
 }
 

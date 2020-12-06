@@ -72,6 +72,20 @@ struct GuardRecord_t
     GuardRecord* iv_guardRecords; ///< List of guard records
 };
 
+/* From hostboot: src/include/usr/hwas/common/hwasCallout.H */
+enum GardType
+{
+    GARD_NULL = 0x00,
+    GARD_User_Manual = 0xD2,
+    GARD_Unrecoverable = 0xE2,
+    GARD_Fatal = 0xE3,
+    GARD_Predictive = 0xE6,
+    GARD_Power = 0xE9,
+    GARD_PHYP = 0xEA,
+    GARD_Reconfig = 0xEB,
+    GARD_Void = 0xFF,
+};
+
 using GuardRecords = std::vector<GuardRecord>;
 } // namespace guard
 } // namespace openpower

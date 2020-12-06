@@ -24,7 +24,7 @@ namespace fs = std::filesystem;
  * care conversion from raw data to EntityPath.
  */
 void create(const EntityPath& entityPath, uint32_t eId = 0,
-            uint8_t eType = 0xD2);
+            uint8_t eType = GARD_User_Manual);
 
 /**
  * @brief Get all the guard records
