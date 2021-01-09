@@ -173,7 +173,7 @@ std::optional<EntityPath>
      * E.g: physical:sys-0/node-0/proc-0
      */
     std::strncpy(g_physStringPath, l_physicalPath.c_str(),
-                 sizeof(g_physStringPath));
+                 sizeof(g_physStringPath) - 1);
 
     int ret = pdbg_target_traverse(
         nullptr /* Passing NULL to start target traversal from root */,
