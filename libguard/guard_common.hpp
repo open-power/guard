@@ -6,6 +6,7 @@
 #include <array>
 #include <cstdint>
 #include <stdexcept>
+#include <optional>
 
 namespace openpower
 {
