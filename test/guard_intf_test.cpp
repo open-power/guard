@@ -176,3 +176,24 @@ TEST_F(TestGuardRecord, AlreadyGuardedTC)
     EXPECT_THROW({ openpower::guard::create(*entityPath); },
                  std::runtime_error);
 }
+
+TEST_F(TestGuardRecord, GetCreatedGuardRecordTC)
+{
+    openpower::guard::libguard_init();
+    std::string physPath{"/sys-0/node-0/proc-0/eq-0/fc-0/core-0"};
+    std::optional<openpower::guard::EntityPath> entityPath =
+        openpower::guard::getEntityPath(physPath);
+
+    openpower::guard::GuardRecord retGuardRecord =
+        openpower::guard::create(*entityPath);
+
+    // Validate the return guard record
+    // Note: Only one record created in this test case and also
+    // by default created guard will be considered as Manual
+    // so expectation will be like below.
+    EXPECT_EQ(retGuardRecord.recordId, 1);
+    EXPECT_EQ(retGuardRecord.targetId, entityPath);
+    EXPECT_EQ(retGuardRecord.elogId, 0);
+    EXPECT_EQ(retGuardRecord.errType,
+              openpower::guard::GardType::GARD_User_Manual);
+}

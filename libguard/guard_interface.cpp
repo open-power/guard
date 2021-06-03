@@ -95,11 +95,28 @@ int guardNext(GuardFile& file, int pos, GuardRecord& guard)
     return pos;
 }
 
+/**
+ * @brief Helper function to return guard record in host
+ *        endianess format
+ *
+ * @param[in] record - bigendian record
+ *
+ * @return guard record in host endianness format
+ *
+ */
+static GuardRecord getHostEndiannessRecord(const GuardRecord& record)
+{
+    GuardRecord convertedRecord = record;
+    convertedRecord.recordId = be32toh(convertedRecord.recordId);
+    convertedRecord.elogId = be32toh(convertedRecord.elogId);
+    return convertedRecord;
+}
+
 #define for_each_guard(file, pos, guard)                                       \
     for (pos = guardNext(file, 0, guard); pos >= 0;                            \
          pos = guardNext(file, ++pos, guard))
 
-void create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
+GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
 {
 
     //! check if guard record already exists
@@ -130,7 +147,7 @@ void create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
                     "Already guard record is available in the GUARD partition");
                 throw std::runtime_error("Guard record is already exist");
             }
-            return;
+            return getHostEndiannessRecord(existGuard);
         }
         //! find the largest record ID
         if (be32toh(existGuard.recordId) > maxId)
@@ -140,10 +157,10 @@ void create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
         lastPos++;
     }
 
+    GuardRecord guard;
     //! if blank record exist
     if (isBlankRecord(existGuard))
     {
-        GuardRecord guard;
         offset = lastPos * sizeof(guard);
         memset(&guard, 0xff, sizeof(guard));
         guard.recordId = htobe32(maxId + 1);
@@ -174,6 +191,8 @@ void create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
             "GUARD file has no space to write the new record in the file.");
         std::runtime_error("No space in GUARD for a new record");
     }
+
+    return getHostEndiannessRecord(guard);
 }
 
 GuardRecords getAll()
