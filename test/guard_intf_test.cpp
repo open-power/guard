@@ -128,20 +128,6 @@ TEST_F(TestGuardRecord, NegTestCase)
     EXPECT_EQ(records.size(), 1);
 }
 
-TEST_F(TestGuardRecord, NegTestGuarded)
-{
-    openpower::guard::libguard_init();
-    std::string phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-0";
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-0";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    openpower::guard::GuardRecords records = openpower::guard::getAll();
-    EXPECT_EQ(records.size(), 1);
-}
-
 TEST_F(TestGuardRecord, NegTestCaseEP)
 {
     openpower::guard::libguard_init();
@@ -174,6 +160,19 @@ TEST_F(TestGuardRecord, NegTestCaseFullGuardFile)
     openpower::guard::create(*entityPath);
     phyPath = "/sys-0/node-0/proc-1/eq-0";
     entityPath = openpower::guard::getEntityPath(phyPath);
+    EXPECT_THROW({ openpower::guard::create(*entityPath); },
+                 std::runtime_error);
+}
+
+TEST_F(TestGuardRecord, AlreadyGuardedTC)
+{
+    openpower::guard::libguard_init();
+    std::string physPath{"/sys-0/node-0/proc-0/eq-0/fc-0/core-0"};
+    std::optional<openpower::guard::EntityPath> entityPath =
+        openpower::guard::getEntityPath(physPath);
+    openpower::guard::create(*entityPath);
+
+    // Trying to guard again with same entity
     EXPECT_THROW({ openpower::guard::create(*entityPath); },
                  std::runtime_error);
 }

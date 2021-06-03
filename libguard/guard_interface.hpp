@@ -17,7 +17,8 @@ namespace fs = std::filesystem;
  * @param[in] entityPath entity path of the guarded record
  * @param[in] eId errorlog ID
  * @param[in] eType errorlog type
- * @return NULL
+ * @return NULL on success
+ *         Throw exception on failure
  *
  * @note EntityPath provided conversion constructor so, same api can use to pass
  * array of uint8_t buffer and conversion constructor automatically will take

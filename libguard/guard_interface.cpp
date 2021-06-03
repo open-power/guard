@@ -128,6 +128,7 @@ void create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
                 guard_log(
                     GUARD_ERROR,
                     "Already guard record is available in the GUARD partition");
+                throw std::runtime_error("Guard record is already exist");
             }
             return;
         }
