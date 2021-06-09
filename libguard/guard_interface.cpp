@@ -210,6 +210,41 @@ GuardRecords getAll()
     return guardRecords;
 }
 
+/**
+ * @brief Helper function to delete guard record
+ *
+ * @param[in] record to delete
+ * @param[in] recordPos position for deleting record
+ * @param[in] posOfLastRecord position of last record in guard file
+ *
+ * @return NULL on success
+ *         Throw exception on failure
+ *
+ */
+static void deleteRecord(GuardRecord record, int recordPos, int posOfLastRecord)
+{
+    GuardRecord nullGuard;
+    size_t sizeOfGuardRecord = sizeof(nullGuard);
+
+    memset(&nullGuard, 0xFF, sizeOfGuardRecord);
+
+    uint32_t offset = recordPos * sizeOfGuardRecord;
+
+    GuardFile file(guardFilePath);
+    file.erase(offset + headerSize, sizeOfGuardRecord);
+
+    int i = recordPos + 1;
+    while (posOfLastRecord != i)
+    {
+        uint32_t offset1 = i * sizeOfGuardRecord;
+        file.read(offset1 + headerSize, &record, sizeOfGuardRecord);
+        uint32_t offset2 = (i - 1) * sizeOfGuardRecord;
+        file.write(offset2 + headerSize, &record, sizeOfGuardRecord);
+        file.write(offset1 + headerSize, &nullGuard, sizeOfGuardRecord);
+        i++;
+    }
+}
+
 void clear(const EntityPath& entityPath)
 {
     int pos = 0;
