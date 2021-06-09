@@ -251,9 +251,7 @@ void clear(const EntityPath& entityPath)
     int delpos = 0;
     int lastPos = 0;
     GuardRecord existGuard;
-    GuardRecord null_guard;
     bool found = false;
-    memset(&null_guard, 0xFF, sizeof(null_guard));
 
     GuardFile file(guardFilePath);
     for_each_guard(file, pos, existGuard)
@@ -271,19 +269,7 @@ void clear(const EntityPath& entityPath)
         guard_log(GUARD_ERROR, "Guard record not found");
         return;
     }
-    uint32_t offset = delpos * sizeof(null_guard);
-    file.erase(offset + headerSize, sizeof(null_guard));
-
-    int i = delpos + 1;
-    while (lastPos != i)
-    {
-        uint32_t offset1 = i * sizeof(existGuard);
-        file.read(offset1 + headerSize, &existGuard, sizeof(existGuard));
-        uint32_t offset2 = (i - 1) * sizeof(existGuard);
-        file.write(offset2 + headerSize, &existGuard, sizeof(existGuard));
-        file.write(offset1 + headerSize, &null_guard, sizeof(null_guard));
-        i++;
-    }
+    deleteRecord(existGuard, delpos, lastPos);
 }
 
 void clearAll()
