@@ -210,3 +210,36 @@ TEST_F(TestGuardRecord, DeleteWithNotExistentEntity)
     // Trying to delete entity which is not present
     EXPECT_THROW({ openpower::guard::clear(*entityPath); }, std::runtime_error);
 }
+
+TEST_F(TestGuardRecord, DeleteByRecordId)
+{
+    openpower::guard::libguard_init();
+    std::string physPath{"/sys-0/node-0/proc-0/eq-0/fc-0/core-0"};
+    std::optional<openpower::guard::EntityPath> entityPath =
+        openpower::guard::getEntityPath(physPath);
+
+    openpower::guard::GuardRecord retGuardRecord =
+        openpower::guard::create(*entityPath);
+
+    // Trying to delete with returned record id
+    openpower::guard::clear(retGuardRecord.recordId);
+
+    // Make sure is deleted
+    openpower::guard::GuardRecords records = openpower::guard::getAll();
+    EXPECT_EQ(records.size(), 0);
+}
+
+TEST_F(TestGuardRecord, DeleteWithNotExistentRecordId)
+{
+    openpower::guard::libguard_init();
+    std::string physPath{"/sys-0/node-0/proc-0/eq-0/fc-0/core-0"};
+    std::optional<openpower::guard::EntityPath> entityPath =
+        openpower::guard::getEntityPath(physPath);
+
+    openpower::guard::GuardRecord retGuardRecord =
+        openpower::guard::create(*entityPath);
+
+    // Trying to delete a record by using returned record id with increment
+    EXPECT_THROW({ openpower::guard::clear(retGuardRecord.recordId + 1); },
+                 std::runtime_error);
+}

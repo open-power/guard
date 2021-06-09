@@ -48,6 +48,15 @@ GuardRecords getAll();
 void clear(const EntityPath& entityPath);
 
 /**
+ * @brief Clear the guard record based on given record id
+ *
+ * @return NULL on success.
+ *         Throw exception on failure.
+ *
+ */
+void clear(const uint32_t recordId);
+
+/**
  * @brief Clear all the guard records
  *
  * @return NULL

@@ -272,6 +272,34 @@ void clear(const EntityPath& entityPath)
     deleteRecord(existGuard, delpos, lastPos);
 }
 
+void clear(const uint32_t recordId)
+{
+    int pos = 0;
+    int delpos = 0;
+    int lastPos = 0;
+    GuardRecord existGuard;
+    bool found = false;
+
+    GuardFile file(guardFilePath);
+    for_each_guard(file, pos, existGuard)
+    {
+        if (be32toh(existGuard.recordId) == recordId)
+        {
+            delpos = pos;
+            found = true;
+        }
+        lastPos++;
+    }
+
+    if (!found)
+    {
+        guard_log(GUARD_ERROR, "Guard record not found");
+        throw std::runtime_error("Guard record not found");
+    }
+
+    deleteRecord(existGuard, delpos, lastPos);
+}
+
 void clearAll()
 {
     GuardRecords guardRecords;
