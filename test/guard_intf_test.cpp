@@ -113,21 +113,6 @@ TEST_F(TestGuardRecord, DeleteGuardGoodPathTest)
     EXPECT_EQ(isRecordDeleted, true);
 }
 
-TEST_F(TestGuardRecord, NegTestCase)
-{
-    openpower::guard::libguard_init();
-    std::string phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-0";
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    openpower::guard::GuardRecords records = openpower::guard::getAll();
-    phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-1";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    EXPECT_NE(entityPath, std::nullopt);
-    openpower::guard::clear(*entityPath);
-    EXPECT_EQ(records.size(), 1);
-}
-
 TEST_F(TestGuardRecord, NegTestCaseEP)
 {
     openpower::guard::libguard_init();
@@ -196,4 +181,32 @@ TEST_F(TestGuardRecord, GetCreatedGuardRecordTC)
     EXPECT_EQ(retGuardRecord.elogId, 0);
     EXPECT_EQ(retGuardRecord.errType,
               openpower::guard::GardType::GARD_User_Manual);
+}
+
+TEST_F(TestGuardRecord, DeleteByEntityPath)
+{
+    openpower::guard::libguard_init();
+    std::string physPath{"/sys-0/node-0/proc-0/eq-0/fc-0/core-0"};
+    std::optional<openpower::guard::EntityPath> entityPath =
+        openpower::guard::getEntityPath(physPath);
+
+    openpower::guard::create(*entityPath);
+
+    // Trying to delete
+    openpower::guard::clear(*entityPath);
+
+    // Make sure is deleted
+    openpower::guard::GuardRecords records = openpower::guard::getAll();
+    EXPECT_EQ(records.size(), 0);
+}
+
+TEST_F(TestGuardRecord, DeleteWithNotExistentEntity)
+{
+    openpower::guard::libguard_init();
+    std::string physPath{"/sys-0/node-0/proc-0/eq-0/fc-0/core-0"};
+    std::optional<openpower::guard::EntityPath> entityPath =
+        openpower::guard::getEntityPath(physPath);
+
+    // Trying to delete entity which is not present
+    EXPECT_THROW({ openpower::guard::clear(*entityPath); }, std::runtime_error);
 }

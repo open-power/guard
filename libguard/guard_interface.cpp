@@ -267,7 +267,7 @@ void clear(const EntityPath& entityPath)
     if (!found)
     {
         guard_log(GUARD_ERROR, "Guard record not found");
-        return;
+        throw std::runtime_error("Guard record not found");
     }
     deleteRecord(existGuard, delpos, lastPos);
 }
