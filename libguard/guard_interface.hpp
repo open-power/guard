@@ -78,6 +78,16 @@ void clearAll();
  */
 void libguard_init(bool enableDevtree = true);
 
+/**
+ * @brief Used to get guard file path which is using by libguard.
+ *
+ * @return guard file path on success
+ *         Throw exception if guard file is not initialised.
+ *
+ * @note This function should call after libguard_init()
+ */
+const fs::path& getGuardFilePath();
+
 namespace utest
 {
 void setGuardFile(const fs::path& file);

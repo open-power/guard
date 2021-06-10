@@ -243,3 +243,31 @@ TEST_F(TestGuardRecord, DeleteWithNotExistentRecordId)
     EXPECT_THROW({ openpower::guard::clear(retGuardRecord.recordId + 1); },
                  std::runtime_error);
 }
+
+TEST_F(TestGuardRecord, GetGuardFilePathTC)
+{
+    openpower::guard::libguard_init();
+
+    std::string retGuardFilePath = openpower::guard::getGuardFilePath();
+
+    // Make sure the guard file matched with TC setup guardFile.
+    EXPECT_EQ(retGuardFilePath, guardFile);
+}
+
+TEST_F(TestGuardRecord, GetGuardFilePathWhenLibguradDidNotInitTC)
+{
+    // Unset the guard file for this UT alone
+    openpower::guard::utest::setGuardFile("");
+
+    // Checking without libguard_init() call.
+    EXPECT_THROW({ openpower::guard::getGuardFilePath(); }, std::runtime_error);
+
+    // Set the guard file since UT reached the end
+    openpower::guard::utest::setGuardFile(guardFile);
+
+    // Make sure the guard file is set since this UT should not break
+    // the other UTs because SetUp() is common to all UTs which are drived from
+    // TestGuardRecord class
+    std::string retGuardFilePath = openpower::guard::getGuardFilePath();
+    EXPECT_EQ(retGuardFilePath, guardFile);
+}

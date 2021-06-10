@@ -71,6 +71,18 @@ void initialize()
 #endif
 }
 
+const fs::path& getGuardFilePath()
+{
+    if (guardFilePath.empty())
+    {
+        throw std::runtime_error(
+            "Guard file is not initialised. "
+            "Please make sure libguard_init() is called already");
+    }
+
+    return guardFilePath;
+}
+
 bool isBlankRecord(const GuardRecord& guard)
 {
     GuardRecord blankRecord;
