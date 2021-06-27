@@ -136,6 +136,7 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
     int lastPos = 0;
     uint32_t maxId = 0;
     uint32_t offset = 0;
+    uint32_t avalSize = 0;
     GuardRecord existGuard;
     memset(&existGuard, 0xff, sizeof(existGuard));
 
@@ -167,6 +168,17 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
             maxId = be32toh(existGuard.recordId);
         }
         lastPos++;
+    }
+
+    // Space left in GUARD file before writing a new record
+    avalSize = file.size() - ((lastPos + 1) * sizeof(existGuard) + headerSize);
+    if (avalSize < sizeof(existGuard))
+    {
+        guard_log(
+            GUARD_ERROR,
+            "Guard file size is %d and space remaining in GUARD file is %d\n",
+            file.size(), avalSize);
+        throw std::runtime_error("Enough size is not available in GUARD file");
     }
 
     GuardRecord guard;
