@@ -12,6 +12,7 @@ namespace guard
 #define GUARD_MAGIC "GUARDREC" //! "GUARDREC"
 /* From hostboot: src/include/usr/hwas/hwasPlatDeconfigGard.H */
 const uint8_t CURRENT_GARD_VERSION_LAYOUT = 0x1;
+#define GUARD_RESOLVED 0xFFFFFFFF
 
 #ifdef PGUARD
 /* From hostboot: src/include/usr/hwas/common/deconfigGard.H:GuardRecord */

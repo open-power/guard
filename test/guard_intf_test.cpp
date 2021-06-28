@@ -271,3 +271,23 @@ TEST_F(TestGuardRecord, GetGuardFilePathWhenLibguradDidNotInitTC)
     std::string retGuardFilePath = openpower::guard::getGuardFilePath();
     EXPECT_EQ(retGuardFilePath, guardFile);
 }
+
+TEST_F(TestGuardRecord, ClearGuardInvalidateAllPathTest)
+{
+    openpower::guard::libguard_init();
+    std::string phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-0";
+    std::optional<openpower::guard::EntityPath> entityPath =
+        openpower::guard::getEntityPath(phyPath);
+    EXPECT_NE(entityPath, std::nullopt);
+    openpower::guard::create(*entityPath);
+    phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-1";
+    entityPath = openpower::guard::getEntityPath(phyPath);
+    openpower::guard::create(*entityPath);
+    openpower::guard::invalidateAll();
+    openpower::guard::GuardRecords records = openpower::guard::getAll();
+    EXPECT_EQ(records.size(), 2);
+    openpower::guard::GuardRecord record = records.at(0);
+    EXPECT_EQ(record.recordId, 0xFFFFFFFF);
+    record = records.at(1);
+    EXPECT_EQ(record.recordId, 0xFFFFFFFF);
+}

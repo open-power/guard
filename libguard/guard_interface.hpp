@@ -64,6 +64,14 @@ void clear(const uint32_t recordId);
 void clearAll();
 
 /**
+ * @brief Invalidates all the guard records
+ * i.e. mark recordId as 0xFFFFFFFF.
+ *
+ * @return NULL
+ */
+void invalidateAll();
+
+/**
  * @brief To initialize libguard
  *
  * This function is used to get guard file which is used to maintain

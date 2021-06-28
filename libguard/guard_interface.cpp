@@ -14,6 +14,7 @@
 #endif /* DEV_TREE */
 
 #include <cstring>
+#include <variant>
 
 namespace openpower
 {
@@ -21,6 +22,7 @@ namespace guard
 {
 
 using namespace openpower::guard::log;
+using guardRecordParam = std::variant<EntityPath, uint32_t>;
 
 static fs::path guardFilePath = "";
 
@@ -134,9 +136,9 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
     //! check if guard record already exists
     int pos = 0;
     int lastPos = 0;
-    uint32_t maxId = 0;
     uint32_t offset = 0;
     uint32_t avalSize = 0;
+    uint32_t maxId = 0;
     GuardRecord existGuard;
     memset(&existGuard, 0xff, sizeof(existGuard));
 
@@ -153,6 +155,11 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
                 file.write(offset + headerSize, &existGuard,
                            sizeof(existGuard));
             }
+            else if (existGuard.recordId == GUARD_RESOLVED)
+            {
+                lastPos++;
+                continue;
+            }
             else
             {
                 guard_log(
@@ -163,7 +170,8 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
             return getHostEndiannessRecord(existGuard);
         }
         //! find the largest record ID
-        if (be32toh(existGuard.recordId) > maxId)
+        if (be32toh((existGuard.recordId) > maxId) &&
+            (existGuard.recordId != GUARD_RESOLVED))
         {
             maxId = be32toh(existGuard.recordId);
         }
@@ -235,126 +243,98 @@ GuardRecords getAll()
 }
 
 /**
- * @brief Helper function to delete guard record
+ * @brief To find the guard record based on recordId or entityPath
  *
- * @param[in] record to delete
- * @param[in] recordPos position for deleting record
- * @param[in] posOfLastRecord position of last record in guard file
+ * @param[in] value (std::variant<EntityPath, uint32_t>)
  *
- * @return NULL on success
- *         Throw exception on failure
+ * @return throws exception on failure
+ * 		NULL on success.
  *
  */
-static void deleteRecord(GuardRecord record, int recordPos, int posOfLastRecord)
+static void invalidateRecord(const guardRecordParam& value)
 {
-    GuardRecord nullGuard;
-    size_t sizeOfGuardRecord = sizeof(nullGuard);
+    int pos = 0;
+    GuardRecord existGuard;
+    bool found = false;
+    uint32_t offset = 0;
+    EntityPath entityPath = {};
+    uint32_t recordPos = 0;
 
-    memset(&nullGuard, 0xFF, sizeOfGuardRecord);
-
-    uint32_t offset = recordPos * sizeOfGuardRecord;
+    if (std::holds_alternative<uint32_t>(value))
+    {
+        recordPos = std::get<uint32_t>(value);
+    }
+    else if (std::holds_alternative<EntityPath>(value))
+    {
+        entityPath = std::get<EntityPath>(value);
+    }
+    else
+    {
+        throw std::runtime_error(
+            "Invalid parameter passed to invalidate guard record");
+    }
 
     GuardFile file(guardFilePath);
-    file.erase(offset + headerSize, sizeOfGuardRecord);
-
-    int i = recordPos + 1;
-    while (posOfLastRecord != i)
+    for_each_guard(file, pos, existGuard)
     {
-        uint32_t offset1 = i * sizeOfGuardRecord;
-        file.read(offset1 + headerSize, &record, sizeOfGuardRecord);
-        uint32_t offset2 = (i - 1) * sizeOfGuardRecord;
-        file.write(offset2 + headerSize, &record, sizeOfGuardRecord);
-        file.write(offset1 + headerSize, &nullGuard, sizeOfGuardRecord);
-        i++;
+        if (((be32toh(existGuard.recordId) == recordPos) ||
+             (existGuard.targetId == entityPath)) &&
+            (existGuard.recordId != GUARD_RESOLVED))
+        {
+            offset = pos * sizeof(existGuard);
+            existGuard.recordId = GUARD_RESOLVED;
+            file.write(offset + headerSize, &existGuard, sizeof(existGuard));
+            found = true;
+            break;
+        }
+    }
+
+    if (!found)
+    {
+        guard_log(GUARD_ERROR, "Guard record not found");
+        throw std::runtime_error("Guard record not found");
     }
 }
 
 void clear(const EntityPath& entityPath)
 {
-    int pos = 0;
-    int delpos = 0;
-    int lastPos = 0;
-    GuardRecord existGuard;
-    bool found = false;
-
-    GuardFile file(guardFilePath);
-    for_each_guard(file, pos, existGuard)
-    {
-        if (existGuard.targetId == entityPath)
-        {
-            delpos = pos;
-            found = true;
-        }
-        lastPos++;
-    }
-
-    if (!found)
-    {
-        guard_log(GUARD_ERROR, "Guard record not found");
-        throw std::runtime_error("Guard record not found");
-    }
-    deleteRecord(existGuard, delpos, lastPos);
+    auto path = entityPath;
+    invalidateRecord(path);
 }
 
 void clear(const uint32_t recordId)
 {
-    int pos = 0;
-    int delpos = 0;
-    int lastPos = 0;
-    GuardRecord existGuard;
-    bool found = false;
-
-    GuardFile file(guardFilePath);
-    for_each_guard(file, pos, existGuard)
-    {
-        if (be32toh(existGuard.recordId) == recordId)
-        {
-            delpos = pos;
-            found = true;
-        }
-        lastPos++;
-    }
-
-    if (!found)
-    {
-        guard_log(GUARD_ERROR, "Guard record not found");
-        throw std::runtime_error("Guard record not found");
-    }
-
-    deleteRecord(existGuard, delpos, lastPos);
+    auto id = recordId;
+    invalidateRecord(id);
 }
 
 void clearAll()
 {
-    GuardRecords guardRecords;
-    GuardRecord guard;
-
-    memset(&guard, 0, sizeof(guard));
     GuardFile file(guardFilePath);
-    file.read(0 + headerSize, &guard, sizeof(guard));
-    if (isBlankRecord(guard))
+
+    file.erase(0, file.size());
+}
+
+void invalidateAll()
+{
+    int pos = 0;
+    GuardRecord existGuard;
+    uint32_t offset = 0;
+
+    memset(&existGuard, 0, sizeof(existGuard));
+    GuardFile file(guardFilePath);
+    file.read(0 + headerSize, &existGuard, sizeof(existGuard));
+    if (isBlankRecord(existGuard))
     {
         guard_log(GUARD_INFO, "No GUARD records to clear");
     }
     else
     {
-        int pos = 0;
-        for_each_guard(file, pos, guard)
+        for_each_guard(file, pos, existGuard)
         {
-            if (guard.errType == GARD_Reconfig)
-            {
-                guardRecords.push_back(guard);
-            }
-        }
-
-        file.erase(pos + headerSize, file.size());
-        pos = 0;
-        for (auto& elem : guardRecords)
-        {
-            uint32_t offset = pos * sizeof(guard);
-            elem.recordId = htobe32(pos + 1);
-            file.write(offset + headerSize, &elem, sizeof(guard));
-            pos++;
+            offset = pos * sizeof(existGuard);
+            existGuard.recordId = GUARD_RESOLVED;
+            file.write(offset + headerSize, &existGuard, sizeof(existGuard));
         }
     }
 }

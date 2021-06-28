@@ -18,7 +18,8 @@ void guardList()
     std::cout << "ID       | ERROR    |  Type  | Path " << std::endl;
     for (const auto& elem : records)
     {
-        if (elem.errType != GARD_Reconfig)
+        if ((elem.errType != GARD_Reconfig) &&
+            (elem.recordId != GUARD_RESOLVED))
         {
             std::cout << std::hex << std::setw(8) << std::setfill('0')
                       << elem.recordId;
