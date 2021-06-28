@@ -139,21 +139,31 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
     uint32_t offset = 0;
     uint32_t avalSize = 0;
     uint32_t maxId = 0;
+    uint32_t id = 0;
+    int empPos = -1;
     GuardRecord existGuard;
-    memset(&existGuard, 0xff, sizeof(existGuard));
+    GuardRecord guard;
+    size_t sizeOfGuard = sizeof(guard);
+    memset(&guard, 0xff, sizeOfGuard);
+    memset(&existGuard, 0xff, sizeOfGuard);
 
     GuardFile file(guardFilePath);
     for_each_guard(file, pos, existGuard)
     {
+        // Storing the oldest resolved guard record position.
+        if ((existGuard.recordId == GUARD_RESOLVED) && (empPos < 0))
+        {
+            empPos = pos;
+        }
+
         if (existGuard.targetId == entityPath)
         {
             if (existGuard.errType == GARD_Reconfig)
             {
-                offset = lastPos * sizeof(existGuard);
+                offset = lastPos * sizeOfGuard;
                 existGuard.errType = eType;
                 existGuard.recordId = htobe32(lastPos + 1);
-                file.write(offset + headerSize, &existGuard,
-                           sizeof(existGuard));
+                file.write(offset + headerSize, &existGuard, sizeOfGuard);
             }
             else if (existGuard.recordId == GUARD_RESOLVED)
             {
@@ -169,9 +179,10 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
             }
             return getHostEndiannessRecord(existGuard);
         }
+
+        id = be32toh(existGuard.recordId);
         //! find the largest record ID
-        if (be32toh((existGuard.recordId) > maxId) &&
-            (existGuard.recordId != GUARD_RESOLVED))
+        if ((id > maxId) && (existGuard.recordId != GUARD_RESOLVED))
         {
             maxId = be32toh(existGuard.recordId);
         }
@@ -179,50 +190,39 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
     }
 
     // Space left in GUARD file before writing a new record
-    avalSize = file.size() - ((lastPos + 1) * sizeof(existGuard) + headerSize);
-    if (avalSize < sizeof(existGuard))
+    avalSize = file.size() - ((lastPos + 1) * sizeOfGuard + headerSize);
+    if (avalSize < sizeOfGuard)
     {
-        guard_log(
-            GUARD_ERROR,
-            "Guard file size is %d and space remaining in GUARD file is %d\n",
-            file.size(), avalSize);
-        throw std::runtime_error("Enough size is not available in GUARD file");
-    }
-
-    GuardRecord guard;
-    //! if blank record exist
-    if (isBlankRecord(existGuard))
-    {
-        offset = lastPos * sizeof(guard);
-        memset(&guard, 0xff, sizeof(guard));
-        guard.recordId = htobe32(maxId + 1);
-        guard.errType = eType;
-        guard.targetId = entityPath;
-        guard.elogId = htobe32(eId);
-        //! TODO:- Need to fetch details from device tree APIs i.e. serial
-        //! number and part number.
-        // For now initializing serial number and part number with 0.
-#ifndef PGUARD
-        memset(guard.u.s1.serialNum, 0, sizeof(guard.u.s1.serialNum));
-        memset(guard.u.s1.partNum, 0, sizeof(guard.u.s1.partNum));
-#endif
-        uint32_t guardFileSize = file.size();
-        if (offset > (guardFileSize - sizeof(guard)))
+        if (empPos < 0)
         {
-            guard_log(
-                GUARD_ERROR,
-                "GUARD file has no space to write the new record in the file.");
-            throw std::runtime_error("No space in GUARD for a new record");
+            guard_log(GUARD_ERROR,
+                      "Guard file size is %d and space remaining in GUARD file "
+                      "is %d\n",
+                      file.size(), avalSize);
+            throw std::runtime_error(
+                "Enough size is not available in GUARD file");
         }
-        file.write(offset + headerSize, &guard, sizeof(guard));
+        // No space is left and have invalid record present. Hence using that
+        // slot to write new guard record.
+        offset = empPos * sizeOfGuard;
     }
     else
     {
-        guard_log(
-            GUARD_ERROR,
-            "GUARD file has no space to write the new record in the file.");
-        std::runtime_error("No space in GUARD for a new record");
+        offset = lastPos * sizeOfGuard;
     }
+
+    guard.recordId = htobe32(maxId + 1);
+    guard.errType = eType;
+    guard.targetId = entityPath;
+    guard.elogId = htobe32(eId);
+    //! TODO:- Need to fetch details from device tree APIs i.e. serial
+    //! number and part number.
+    // For now initializing serial number and part number with 0.
+#ifndef PGUARD
+    memset(guard.u.s1.serialNum, 0, sizeof(guard.u.s1.serialNum));
+    memset(guard.u.s1.partNum, 0, sizeof(guard.u.s1.partNum));
+#endif
+    file.write(offset + headerSize, &guard, sizeOfGuard);
 
     return getHostEndiannessRecord(guard);
 }

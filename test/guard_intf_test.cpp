@@ -291,3 +291,27 @@ TEST_F(TestGuardRecord, ClearGuardInvalidateAllPathTest)
     record = records.at(1);
     EXPECT_EQ(record.recordId, 0xFFFFFFFF);
 }
+
+TEST_F(TestGuardRecord, ClearResolvedGuardRecord)
+{
+    openpower::guard::libguard_init();
+    std::string phyPath = "/sys-0/node-0/dimm-0";
+    std::optional<openpower::guard::EntityPath> entityPath =
+        openpower::guard::getEntityPath(phyPath);
+    openpower::guard::create(*entityPath);
+    phyPath = "/sys-0/node-0/dimm-1";
+    entityPath = openpower::guard::getEntityPath(phyPath);
+    openpower::guard::create(*entityPath);
+    phyPath = "/sys-0/node-0/dimm-2";
+    entityPath = openpower::guard::getEntityPath(phyPath);
+    openpower::guard::create(*entityPath);
+    phyPath = "/sys-0/node-0/dimm-3";
+    entityPath = openpower::guard::getEntityPath(phyPath);
+    openpower::guard::create(*entityPath);
+    openpower::guard::clear(*entityPath);
+    phyPath = "/sys-0/node-0/dimm-4";
+    entityPath = openpower::guard::getEntityPath(phyPath);
+    openpower::guard::create(*entityPath);
+    openpower::guard::GuardRecords records = openpower::guard::getAll();
+    EXPECT_EQ(records.size(), 4);
+}
