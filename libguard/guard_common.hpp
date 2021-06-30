@@ -1,17 +1,20 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
+#include "guard_exception.hpp"
 #include "guard_log.hpp"
 
 #include <array>
 #include <cstdint>
-#include <stdexcept>
 #include <optional>
 
 namespace openpower
 {
 namespace guard
 {
+
+using namespace openpower::guard::exception;
+
 /* From hostboot: src/include/usr/targeting/common/entitypath.H */
 struct EntityPath
 {
@@ -75,7 +78,7 @@ struct EntityPath
                 GUARD_ERROR,
                 "Size mismatch. Given buf size[%d] EntityPath sizeof[%d]",
                 rawData.size(), sizeof(EntityPath));
-            throw std::runtime_error(
+            throw InvalidEntityPath(
                 "EntityPath initializer_list constructor failed");
         }
 
@@ -83,7 +86,7 @@ struct EntityPath
         {
             openpower::guard::log::guard_log(GUARD_ERROR,
                                              "Given raw data is empty");
-            throw std::runtime_error(
+            throw InvalidEntityPath(
                 "EntityPath initializer_list constructor failed");
         }
 
@@ -93,7 +96,7 @@ struct EntityPath
         {
             openpower::guard::log::guard_log(
                 GUARD_ERROR, "PathElement size mismatch in given raw data");
-            throw std::runtime_error(
+            throw InvalidEntityPath(
                 "EntityPath initializer_list constructor failed");
         }
 
@@ -107,7 +110,7 @@ struct EntityPath
                 openpower::guard::log::guard_log(
                     GUARD_ERROR,
                     "Insufficient data for PathElement in given raw data");
-                throw std::runtime_error(
+                throw InvalidEntityPath(
                     "EntityPath initializer_list constructor failed");
             }
 
@@ -122,8 +125,7 @@ struct EntityPath
         {
             openpower::guard::log::guard_log(GUARD_ERROR,
                                              "Given raw data is empty");
-            throw std::runtime_error(
-                "EntityPath conversion constructor failed");
+            throw InvalidEntityPath("EntityPath conversion constructor failed");
         }
 
         type_size = rawData[0];
@@ -135,8 +137,7 @@ struct EntityPath
                 GUARD_ERROR,
                 "Size mismatch. Given path elements size[%d] max[%d]",
                 pathElementsSize, maxPathElements);
-            throw std::runtime_error(
-                "EntityPath conversion constructor failed");
+            throw InvalidEntityPath("EntityPath conversion constructor failed");
         }
 
         for (int i = 0, j = 1; i < pathElementsSize;
@@ -147,7 +148,7 @@ struct EntityPath
                 openpower::guard::log::guard_log(
                     GUARD_ERROR,
                     "Insufficient data for PathElement in given raw data");
-                throw std::runtime_error(
+                throw InvalidEntityPath(
                     "EntityPath conversion constructor failed");
             }
 

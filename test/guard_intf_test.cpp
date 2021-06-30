@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "libguard/guard_common.hpp"
 #include "libguard/guard_entity.hpp"
+#include "libguard/guard_exception.hpp"
 #include "libguard/guard_file.hpp"
 #include "libguard/guard_interface.hpp"
 #include "libguard/include/guard_record.hpp"
@@ -100,13 +101,14 @@ TEST_F(TestGuardRecord, DeleteGuardGoodPathTest)
     entityPath = openpower::guard::getEntityPath(phyPath);
     openpower::guard::clear(*entityPath);
     openpower::guard::GuardRecords records = openpower::guard::getAll();
-    bool isRecordDeleted = true;
+    bool isRecordDeleted = false;
     for (int i = 0; i < (int)records.size(); i++)
     {
         openpower::guard::GuardRecord record = records.at(i);
         if (record.targetId == entityPath)
         {
-            isRecordDeleted = false;
+            EXPECT_EQ(record.recordId, 0xFFFFFFFF);
+            isRecordDeleted = true;
             break;
         }
     }
@@ -125,9 +127,8 @@ TEST_F(TestGuardRecord, NegTestCaseEP)
 TEST_F(TestGuardRecord, NegTestCaseFullGuardFile)
 {
     openpower::guard::libguard_init();
-    std::string phyPath = "/sys-0";
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(phyPath);
+    std::string phyPath = " ";
+    std::optional<openpower::guard::EntityPath> entityPath;
     phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-1";
     entityPath = openpower::guard::getEntityPath(phyPath);
     openpower::guard::create(*entityPath);
@@ -140,13 +141,10 @@ TEST_F(TestGuardRecord, NegTestCaseFullGuardFile)
     phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-0";
     entityPath = openpower::guard::getEntityPath(phyPath);
     openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/proc-1/eq-0";
+    phyPath = "/sys-0/node-0/dimm-1";
     entityPath = openpower::guard::getEntityPath(phyPath);
     EXPECT_THROW({ openpower::guard::create(*entityPath); },
-                 std::runtime_error);
+                 openpower::guard::exception::GuardFileOverFlowed);
 }
 
 TEST_F(TestGuardRecord, AlreadyGuardedTC)
@@ -159,7 +157,7 @@ TEST_F(TestGuardRecord, AlreadyGuardedTC)
 
     // Trying to guard again with same entity
     EXPECT_THROW({ openpower::guard::create(*entityPath); },
-                 std::runtime_error);
+                 openpower::guard::exception::AlreadyGuarded);
 }
 
 TEST_F(TestGuardRecord, GetCreatedGuardRecordTC)
@@ -197,7 +195,7 @@ TEST_F(TestGuardRecord, DeleteByEntityPath)
 
     // Make sure is deleted
     openpower::guard::GuardRecords records = openpower::guard::getAll();
-    EXPECT_EQ(records.size(), 0);
+    EXPECT_EQ(records.size(), 1);
 }
 
 TEST_F(TestGuardRecord, DeleteWithNotExistentEntity)
@@ -208,7 +206,8 @@ TEST_F(TestGuardRecord, DeleteWithNotExistentEntity)
         openpower::guard::getEntityPath(physPath);
 
     // Trying to delete entity which is not present
-    EXPECT_THROW({ openpower::guard::clear(*entityPath); }, std::runtime_error);
+    EXPECT_THROW({ openpower::guard::clear(*entityPath); },
+                 openpower::guard::exception::InvalidEntityPath);
 }
 
 TEST_F(TestGuardRecord, DeleteByRecordId)
@@ -226,7 +225,9 @@ TEST_F(TestGuardRecord, DeleteByRecordId)
 
     // Make sure is deleted
     openpower::guard::GuardRecords records = openpower::guard::getAll();
-    EXPECT_EQ(records.size(), 0);
+    EXPECT_EQ(records.size(), 1);
+    openpower::guard::GuardRecord record = records.at(0);
+    EXPECT_EQ(record.recordId, 0xFFFFFFFF);
 }
 
 TEST_F(TestGuardRecord, DeleteWithNotExistentRecordId)
@@ -241,7 +242,7 @@ TEST_F(TestGuardRecord, DeleteWithNotExistentRecordId)
 
     // Trying to delete a record by using returned record id with increment
     EXPECT_THROW({ openpower::guard::clear(retGuardRecord.recordId + 1); },
-                 std::runtime_error);
+                 openpower::guard::exception::InvalidEntityPath);
 }
 
 TEST_F(TestGuardRecord, GetGuardFilePathTC)
@@ -260,7 +261,8 @@ TEST_F(TestGuardRecord, GetGuardFilePathWhenLibguradDidNotInitTC)
     openpower::guard::utest::setGuardFile("");
 
     // Checking without libguard_init() call.
-    EXPECT_THROW({ openpower::guard::getGuardFilePath(); }, std::runtime_error);
+    EXPECT_THROW({ openpower::guard::getGuardFilePath(); },
+                 openpower::guard::exception::GuardFileOpenFailed);
 
     // Set the guard file since UT reached the end
     openpower::guard::utest::setGuardFile(guardFile);

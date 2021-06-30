@@ -9,6 +9,7 @@ headers_libguard = [
   'guard_entity.hpp',
   'guard_log.hpp',
   'guard_common.hpp',
+  'guard_exception.hpp',
 ]
 
 headers = [

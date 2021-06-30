@@ -18,7 +18,13 @@ namespace fs = std::filesystem;
  * @param[in] eId errorlog ID
  * @param[in] eType errorlog type
  * @return created guard record in host endianess format on success
- *         Throw exception on failure
+ *         Throw following exceptions on failure:
+ *         -GuardFileOverFlowed
+ *         -AlreadyGuarded
+ *         -GuardFileOpenFailed
+ *         -GuardFileSeekFailed
+ *         -GuardFileReadFailed
+ *         -GuardFileWriteFailed
  *
  * @note EntityPath provided conversion constructor so, same api can use to pass
  * array of uint8_t buffer and conversion constructor automatically will take
@@ -31,6 +37,10 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId = 0,
  * @brief Get all the guard records
  *
  * @return GuardRecords List of Guard Records.
+ *         On failure will throw below exceptions:
+ *         -GuardFileOpenFailed
+ *         -GuardFileSeekFailed
+ *         -GuardFileReadFailed
  */
 GuardRecords getAll();
 
@@ -39,7 +49,13 @@ GuardRecords getAll();
  *
  * @param[in] entityPath entity path
  * @return NULL on success
- *         Throw exception on failure
+ *         Throw following exceptions on failure:
+ *         -InvalidEntry
+ *         -InvalidEntityPath
+ *         -GuardFileOpenFailed
+ *         -GuardFileSeekFailed
+ *         -GuardFileReadFailed
+ *         -GuardFileWriteFailed
  *
  * @note EntityPath provided conversion constructor so, same api can use to pass
  * array of uint8_t buffer and conversion constructor automatically will take
@@ -51,7 +67,13 @@ void clear(const EntityPath& entityPath);
  * @brief Clear the guard record based on given record id
  *
  * @return NULL on success.
- *         Throw exception on failure.
+ *         Throw following exceptions on failure:
+ *         -InvalidEntry
+ *         -InvalidEntityPath
+ *         -GuardFileOpenFailed
+ *         -GuardFileSeekFailed
+ *         -GuardFileWriteFailed
+ *         -GuardFileReadFailed
  *
  */
 void clear(const uint32_t recordId);
@@ -59,7 +81,11 @@ void clear(const uint32_t recordId);
 /**
  * @brief Clear all the guard records
  *
- * @return NULL
+ * @return NULL on success
+ *         Throw below exceptions on failure:
+ *         -GuardFileOpenFailed
+ *         -GuardFileSeekFailed
+ *         -GuardFileWriteFailed
  */
 void clearAll();
 
@@ -67,7 +93,12 @@ void clearAll();
  * @brief Invalidates all the guard records
  * i.e. mark recordId as 0xFFFFFFFF.
  *
- * @return NULL
+ * @return NULL on success
+ *         Throw throw below exceptions on failure:
+ *         -GuardFileOpenFailed
+ *         -GuardFileSeekFailed
+ *         -GuardFileWriteFailed
+ *         -GuardFileReadFailed
  */
 void invalidateAll();
 
@@ -90,7 +121,8 @@ void libguard_init(bool enableDevtree = true);
  * @brief Used to get guard file path which is using by libguard.
  *
  * @return guard file path on success
- *         Throw exception if guard file is not initialised.
+ *         Throws GuardFileOpenFailed exception if guard file is not
+ * initialised.
  *
  * @note This function should call after libguard_init()
  */

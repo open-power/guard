@@ -45,7 +45,11 @@ class GuardFile
      * @param[in] dst data to read
      * @param[in] len length of the data to read
      *            magic number and other details.
-     * @return NULL
+     * @return NULL on success
+     * 		   Throw below exceptions on failure:
+     * 		   -GuardFileOpenFailed
+     * 		   -GuardFileSeekFailed
+     * 		   -GuardFileReadFailed
      */
     void read(const uint64_t pos, void* dst, const uint64_t len);
 
@@ -55,7 +59,11 @@ class GuardFile
      * @param[in] pos position in the file to write guard data
      * @param[in] dst data to write
      * @param[in] len length of the data to write
-     * @return NULL
+     * @return NULL on success
+     * 			Throw below exceptions on failure:
+     * 			-GuardFileOpenFailed
+     * 			-GuardFileSeekFailed
+     * 			-GuardFileWriteFailed
      */
     void write(const uint64_t pos, const void* src, const uint64_t len);
 
@@ -64,7 +72,8 @@ class GuardFile
      *
      * @param[in] pos position in the file to erase guard data
      * @param[in] len length of the data to erase from position
-     * @return NULL
+     * @return NULL on success
+     * 			Throw InvalidEntry exception on failure.
      */
     void erase(const uint64_t pos, const uint64_t len);
 

@@ -5,6 +5,7 @@
 
 #include "guard_common.hpp"
 #include "guard_entity.hpp"
+#include "guard_exception.hpp"
 #include "guard_file.hpp"
 #include "guard_log.hpp"
 #include "include/guard_record.hpp"
@@ -23,6 +24,7 @@ namespace guard
 
 using namespace openpower::guard::log;
 using guardRecordParam = std::variant<EntityPath, uint32_t>;
+using namespace openpower::guard::exception;
 
 static fs::path guardFilePath = "";
 
@@ -77,7 +79,8 @@ const fs::path& getGuardFilePath()
 {
     if (guardFilePath.empty())
     {
-        throw std::runtime_error(
+        guard_log(GUARD_ERROR, "Guard file is not initialised.");
+        throw GuardFileOpenFailed(
             "Guard file is not initialised. "
             "Please make sure libguard_init() is called already");
     }
@@ -175,7 +178,7 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
                 guard_log(
                     GUARD_ERROR,
                     "Already guard record is available in the GUARD partition");
-                throw std::runtime_error("Guard record is already exist");
+                throw AlreadyGuarded("Guard record is already exist");
             }
             return getHostEndiannessRecord(existGuard);
         }
@@ -199,7 +202,7 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
                       "Guard file size is %d and space remaining in GUARD file "
                       "is %d\n",
                       file.size(), avalSize);
-            throw std::runtime_error(
+            throw GuardFileOverFlowed(
                 "Enough size is not available in GUARD file");
         }
         // No space is left and have invalid record present. Hence using that
@@ -247,8 +250,10 @@ GuardRecords getAll()
  *
  * @param[in] value (std::variant<EntityPath, uint32_t>)
  *
- * @return throws exception on failure
- * 		NULL on success.
+ * @return NULL on success.
+ * 		   Throw following exceptions:
+ * 		   -InvalidEntry
+ * 		   -InvalidEntityPath
  *
  */
 static void invalidateRecord(const guardRecordParam& value)
@@ -270,7 +275,7 @@ static void invalidateRecord(const guardRecordParam& value)
     }
     else
     {
-        throw std::runtime_error(
+        throw InvalidEntry(
             "Invalid parameter passed to invalidate guard record");
     }
 
@@ -292,7 +297,7 @@ static void invalidateRecord(const guardRecordParam& value)
     if (!found)
     {
         guard_log(GUARD_ERROR, "Guard record not found");
-        throw std::runtime_error("Guard record not found");
+        throw InvalidEntityPath("Guard record not found");
     }
 }
 
