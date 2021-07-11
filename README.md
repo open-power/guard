@@ -34,14 +34,15 @@ GUARD Tool
 Usage: guard [OPTIONS]
 
 Options:
-  -h,--help              Use the below listed functions.
-                         Warning: Don't try guard on non guardable units
-                         (sys, perv)
-  -c,--create TEXT       Create GUARD record, expects physical path as input.
-  -d,--delete TEXT       Delete GUARD record, expects physical path as input.
-  -l,--list              Listing of GUARDed resources.
-  -r,--clearall          Clears GUARD states for all resources.
-  -v,--version           Version of GUARD tool.
+  -h,--help                Guard CLI tool options
+  -c,--create TEXT         Create Guard record, expects physical path as input
+  -i,--invalidate TEXT     Invalidate a single Guard record, expects physical
+                           path as input
+  -I,--invalidate-all      Invalidates all the Guard records
+  -l,--list                List all the GUARD'ed resources
+  -r,--reset               Erase all the Guard records
+  -v,--version             Version of GUARD tool
+
 ```
 **Note:** Physical path can be fetched from device tree, using ATTR_PHYS_DEV_PATH
 attribute of the corresponding target.
@@ -64,11 +65,15 @@ guard -l
 ID       | ERROR    |  Type  | Path 
 00000001 | 00000000 | manual | physical:sys-0/node-0/proc-0/mc-0/mi-0/mcc-0
 ```
-* To clear all the guard records
+* To erase all the guard records
 ```
 guard -r
 ```
-* To clear a particular guard record
+* To invalidate a single guard record
 ```
-guard -d sys-0/node-0/proc-0/mc-0/mi-0/mcc-0
+guard -i sys-0/node-0/proc-0/mc-0/mi-0/mcc-0
+```
+* To invalidate all the guard records
+```
+guard -I
 ```

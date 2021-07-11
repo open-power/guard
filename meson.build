@@ -28,6 +28,10 @@ conf_data.set_quoted('GUARD_PRSV_PATH', get_option('GUARD_PRSV_PATH'),
                       description : 'GUARD file in pnor prsv partition'
                     )
 
+conf_data.set_quoted('GUARD_VERSION', 'v1.0',
+              description : 'Setting guard tool version'
+             )
+
 conf_data.set('DEV_TREE', get_option('devtree').enabled(),
               description : 'Use device tree to get physical path value'
              )
@@ -40,8 +44,6 @@ configure_file(output: 'config.h',
 )
 
 #add_project_arguments('-DPGUARD', language : 'cpp')
-add_project_arguments('-DGUARD_VERSION', language : 'cpp')
-set_variable('GUARD_VERSION', '1.0')
 
 subdir('libguard')
 
