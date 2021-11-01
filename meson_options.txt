@@ -1,14 +1,9 @@
 option('tests', type: 'feature', description: 'Build tests')
 option('oe-sdk', type: 'feature', description: 'Enable OE SDK')
 
-option('GUARD_RO_PATH', type : 'string',
-        value : '/var/lib/phosphor-software-manager/pnor/ro/GUARD',
-        description : 'GUARD file path in ro partition'
-      )
-
 option('GUARD_PRSV_PATH', type : 'string',
-        value : '/var/lib/phosphor-software-manager/pnor/prsv/GUARD',
-        description : 'GUARD file path in prsv partition'
+        value : '/var/lib/phosphor-software-manager/hostfw/running/GUARD',
+        description : 'GUARD file path that is preserved'
       )
 
 option('devtree', type: 'feature', value : 'disabled',

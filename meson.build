@@ -21,11 +21,8 @@ add_project_arguments('-Wno-psabi', language: 'cpp')
 
 conf_data = configuration_data()
 
-conf_data.set_quoted('GUARD_RO_PATH', get_option('GUARD_RO_PATH'),
-                      description : 'GUARD file in pnor ro partition'
-                    )
 conf_data.set_quoted('GUARD_PRSV_PATH', get_option('GUARD_PRSV_PATH'),
-                      description : 'GUARD file in pnor prsv partition'
+                      description : 'GUARD file that is preserved'
                     )
 
 conf_data.set_quoted('GUARD_VERSION', 'v1.0',

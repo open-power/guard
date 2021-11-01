@@ -40,15 +40,8 @@ void initialize()
     {
         if (!fs::exists(GUARD_PRSV_PATH))
         {
-            if (fs::exists(GUARD_RO_PATH))
-            {
-                fs::copy_file(GUARD_RO_PATH, GUARD_PRSV_PATH);
-            }
-            else
-            {
-                guard_log(GUARD_ERROR, "Fail to find guard file %s",
-                          GUARD_RO_PATH);
-            }
+            guard_log(GUARD_ERROR, "Fail to find guard file %s",
+                      GUARD_PRSV_PATH);
         }
         guardFilePath = GUARD_PRSV_PATH;
     }
