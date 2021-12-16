@@ -159,6 +159,7 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
                 offset = lastPos * sizeOfGuard;
                 existGuard.errType = eType;
                 existGuard.recordId = htobe32(lastPos + 1);
+                existGuard.elogId = htobe32(eId);
                 file.write(offset + headerSize, &existGuard, sizeOfGuard);
             }
             else if (existGuard.recordId == GUARD_RESOLVED)
