@@ -183,6 +183,16 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType,
                     existGuard.elogId = htobe32(eId);
                     file.write(offset + headerSize, &existGuard, sizeOfGuard);
                 }
+                else if ((existGuard.errType == GARD_Predictive) &&
+                         (eType == GARD_Fatal))
+                {
+                    // Override the existing Predictive guard if the given
+                    // record type is Fatal
+                    offset = lastPos * sizeOfGuard;
+                    existGuard.errType = eType;
+                    existGuard.elogId = htobe32(eId);
+                    file.write(offset + headerSize, &existGuard, sizeOfGuard);
+                }
                 else
                 {
                     guard_log(
