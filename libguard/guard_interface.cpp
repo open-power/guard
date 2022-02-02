@@ -154,7 +154,8 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
 
         if (existGuard.targetId == entityPath)
         {
-            if (existGuard.errType == GARD_Reconfig)
+            if (existGuard.errType == GARD_Reconfig ||
+                existGuard.errType == GARD_Sticky_deconfig)
             {
                 offset = lastPos * sizeOfGuard;
                 existGuard.errType = eType;

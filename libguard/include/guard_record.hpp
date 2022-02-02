@@ -84,6 +84,8 @@ enum GardType
     GARD_Power = 0xE9,
     GARD_PHYP = 0xEA,
     GARD_Reconfig = 0xEB,
+    GARD_Sticky_deconfig = 0xEC, // Force deconfig on reconfig loop,
+                                 // not availible for resource recovery.
     GARD_Void = 0xFF,
 };
 
