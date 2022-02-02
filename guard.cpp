@@ -22,8 +22,10 @@ void guardList(bool displayResolved)
     for (const auto& elem : records)
     {
         // Not to print guard records with errorlog type set as GARD_Reconfig
+        // or GARD_Sticky_deconfig
         // As guard below type records are for internal usage only.
-        if (elem.errType == GARD_Reconfig)
+        if (elem.errType == GARD_Reconfig ||
+            elem.errType == GARD_Sticky_deconfig)
         {
             continue;
         }
