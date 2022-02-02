@@ -126,7 +126,8 @@ static GuardRecord getHostEndiannessRecord(const GuardRecord& record)
     for (pos = guardNext(file, 0, guard); pos >= 0;                            \
          pos = guardNext(file, ++pos, guard))
 
-GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
+GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType,
+                   bool overwriteRecord)
 {
 
     //! check if guard record already exists
@@ -169,6 +170,28 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
             {
                 lastPos++;
                 continue;
+            }
+            else if (overwriteRecord)
+            {
+                if ((existGuard.errType == GARD_User_Manual) &&
+                    ((eType == GARD_Fatal) || (eType == GARD_Predictive)))
+                {
+                    // Override the existing manual guard if the given record
+                    // type is Fatal or Predictive
+                    offset = lastPos * sizeOfGuard;
+                    existGuard.errType = eType;
+                    existGuard.elogId = htobe32(eId);
+                    file.write(offset + headerSize, &existGuard, sizeOfGuard);
+                }
+                else
+                {
+                    guard_log(
+                        GUARD_ERROR,
+                        "Failed to overwrite since record is already exist and "
+                        "that does not meet the condition to overwrite");
+                    throw AlreadyGuarded(
+                        "Failed to overwrite, Guard record is already exist");
+                }
             }
             else
             {

@@ -14,9 +14,15 @@ namespace fs = std::filesystem;
 /**
  * @brief Create a guard record on the PNOR Partition file
  *
+ * @details This function will overwrite the existing guard record
+ *          based on the given "overwriteRecord" flag if that's meets
+ *          a certain conditions that are defined in this function.
+ *
  * @param[in] entityPath entity path of the guarded record
  * @param[in] eId errorlog ID
  * @param[in] eType errorlog type
+ * @param[in] overwriteRecord used to decide overwrite existing record
+ *
  * @return created guard record in host endianess format on success
  *         Throw following exceptions on failure:
  *         -GuardFileOverFlowed
@@ -31,7 +37,8 @@ namespace fs = std::filesystem;
  * care conversion from raw data to EntityPath.
  */
 GuardRecord create(const EntityPath& entityPath, uint32_t eId = 0,
-                   uint8_t eType = GARD_User_Manual);
+                   uint8_t eType = GARD_User_Manual,
+                   bool overwriteRecord = true);
 
 /**
  * @brief Get all the guard records
