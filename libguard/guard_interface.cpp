@@ -154,15 +154,18 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType)
 
         if (existGuard.targetId == entityPath)
         {
-            if (existGuard.errType == GARD_Reconfig ||
+            /**
+             * - Ignore the existing record if resolved
+             * - Ignore ephemeral records (GARD_Reconfig and
+             *   GARD_Sticky_deconfig) since the assumption is the host
+             *   application created for their usage to support resource
+             *   recovery and no one will create those types of records
+             *   other than Hostboot and also they are using their own
+             *   infrastructure for the guard operation, not the libguard.
+             */
+            if (existGuard.recordId == GUARD_RESOLVED ||
+                existGuard.errType == GARD_Reconfig ||
                 existGuard.errType == GARD_Sticky_deconfig)
-            {
-                offset = lastPos * sizeOfGuard;
-                existGuard.errType = eType;
-                existGuard.recordId = htobe32(lastPos + 1);
-                file.write(offset + headerSize, &existGuard, sizeOfGuard);
-            }
-            else if (existGuard.recordId == GUARD_RESOLVED)
             {
                 lastPos++;
                 continue;
