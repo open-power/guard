@@ -84,15 +84,9 @@ void guardList(bool displayResolved)
     }
 }
 
-void guardDelete(const std::string& physicalPath)
+void guardDelete(const uint32_t recordId)
 {
-    std::optional<EntityPath> entityPath = getEntityPath(physicalPath);
-    if (!entityPath)
-    {
-        std::cerr << "Unsupported physical path " << physicalPath << std::endl;
-        return;
-    }
-    clear(*entityPath);
+    clear(recordId);
 }
 
 void guardClear()
@@ -129,7 +123,7 @@ int main(int argc, char** argv)
     {
         CLI::App app{"Guard Tool"};
         std::optional<std::string> createGuardStr;
-        std::optional<std::string> deleteGuardStr;
+        std::optional<uint32_t> recordId;
         bool listGuardRecords = false;
         bool clearAll = false;
         bool listResolvedGuardRecords = false;
@@ -140,8 +134,8 @@ int main(int argc, char** argv)
         app.add_option("-c, --create", createGuardStr,
                        "Create Guard record, expects physical path as input");
         app.add_option(
-            "-i, --invalidate", deleteGuardStr,
-            "Invalidate a single Guard record, expects physical path as input");
+            "-i, --invalidate", recordId,
+            "Invalidate a single Guard record, expects record id as input");
         app.add_flag("-I, --invalidate-all", invalidateAll,
                      "Invalidates all the Guard records");
         app.add_flag("-l, --list", listGuardRecords,
@@ -160,9 +154,9 @@ int main(int argc, char** argv)
         {
             guardCreate(*createGuardStr);
         }
-        else if (deleteGuardStr)
+        else if (recordId)
         {
-            guardDelete(*deleteGuardStr);
+            guardDelete(*recordId);
         }
         else if (clearAll)
         {
