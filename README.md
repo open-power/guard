@@ -36,8 +36,8 @@ Usage: guard [OPTIONS]
 Options:
   -h,--help                Guard CLI tool options
   -c,--create TEXT         Create Guard record, expects physical path as input
-  -i,--invalidate TEXT     Invalidate a single Guard record, expects physical
-                           path as input
+  -i,--invalidate FLOAT    Invalidate a single Guard record, expects record id
+                           as input
   -I,--invalidate-all      Invalidates all the Guard records
   -l,--list                List all the GUARD'ed resources
   -r,--reset               Erase all the Guard records
@@ -71,7 +71,7 @@ guard -r
 ```
 * To invalidate a single guard record
 ```
-guard -i sys-0/node-0/proc-0/mc-0/mi-0/mcc-0
+guard -i 1
 ```
 * To invalidate all the guard records
 ```
