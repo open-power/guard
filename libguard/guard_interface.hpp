@@ -43,13 +43,17 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId = 0,
 /**
  * @brief Get all the guard records
  *
+ * @param[in] persistentTypeOnly - Used to decide whether wants to get all
+ *                                 records or only persistent type records.
+ *                                 By default, get all records.
+ *
  * @return GuardRecords List of Guard Records.
  *         On failure will throw below exceptions:
  *         -GuardFileOpenFailed
  *         -GuardFileSeekFailed
  *         -GuardFileReadFailed
  */
-GuardRecords getAll();
+GuardRecords getAll(bool persistentTypeOnly = false);
 
 /**
  * @brief Clear the guard record

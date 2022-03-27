@@ -260,7 +260,7 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType,
     return getHostEndiannessRecord(guard);
 }
 
-GuardRecords getAll()
+GuardRecords getAll(bool persistentTypeOnly)
 {
     GuardRecords guardRecords;
     GuardRecord curRecord;
@@ -268,6 +268,11 @@ GuardRecords getAll()
     GuardFile file(guardFilePath);
     for_each_guard(file, pos, curRecord)
     {
+        if (persistentTypeOnly && (curRecord.errType == GARD_Reconfig ||
+                                   curRecord.errType == GARD_Sticky_deconfig))
+        {
+            continue;
+        }
         curRecord.recordId = be32toh(curRecord.recordId);
         curRecord.elogId = be32toh(curRecord.elogId);
         guardRecords.push_back(curRecord);
