@@ -11,7 +11,10 @@ using namespace openpower::guard;
 
 void guardList(bool displayResolved)
 {
-    auto records = getAll();
+    // Don't get ephemeral records because those type records are not intended
+    // to expose to the end user, just created for internal purpose to use
+    // by the BMC and Hostboot.
+    auto records = getAll(true);
     if (!records.size())
     {
         std::cout << "No Records to display" << std::endl;
@@ -21,16 +24,8 @@ void guardList(bool displayResolved)
     bool isHeaderPrinted = false;
     for (const auto& elem : records)
     {
-        // Not to print guard records with errorlog type set as GARD_Reconfig
-        // or GARD_Sticky_deconfig
-        // As guard below type records are for internal usage only.
-        if (elem.errType == GARD_Reconfig ||
-            elem.errType == GARD_Sticky_deconfig)
-        {
-            continue;
-        }
         // To list resolved records as user wants to list resolved records
-        else if (displayResolved && (elem.recordId != GUARD_RESOLVED))
+        if (displayResolved && (elem.recordId != GUARD_RESOLVED))
         {
             continue;
         }
