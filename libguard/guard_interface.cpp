@@ -90,14 +90,17 @@ bool isBlankRecord(const GuardRecord& guard)
 
 int guardNext(GuardFile& file, int pos, GuardRecord& guard)
 {
-    uint32_t offset = (pos * sizeof(guard)) + headerSize;
+    auto lenOfGuardRecord{sizeof(guard)};
+    uint32_t offset = (pos * lenOfGuardRecord) + headerSize;
     uint32_t size = file.size();
-    if (offset > size)
+
+    // Validate the offset with the required bytes size before reading.
+    if (offset + lenOfGuardRecord > size)
     {
         return -1;
     }
-    memset(&guard, 0, sizeof(guard));
-    file.read(offset, &guard, sizeof(guard));
+    memset(&guard, 0, lenOfGuardRecord);
+    file.read(offset, &guard, lenOfGuardRecord);
     if (isBlankRecord(guard))
     {
         return -1;
