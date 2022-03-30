@@ -226,15 +226,17 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType,
     }
 
     // Space left in GUARD file before writing a new record
-    avalSize = file.size() - ((lastPos + 1) * sizeOfGuard + headerSize);
+    avalSize = file.size() - ((lastPos * sizeOfGuard) + headerSize);
+
     if (avalSize < sizeOfGuard)
     {
         if (empPos < 0)
         {
             guard_log(GUARD_ERROR,
-                      "Guard file size is %d and space remaining in GUARD file "
-                      "is %d\n",
-                      file.size(), avalSize);
+                      "Guard file size is %db (in bytes) and space remaining "
+                      "in the GUARD file is %db but, required %db to create "
+                      "a record. Total records: %d\n",
+                      file.size(), avalSize, sizeOfGuard, lastPos);
             throw GuardFileOverFlowed(
                 "Enough size is not available in GUARD file");
         }
