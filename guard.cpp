@@ -23,8 +23,7 @@ void printRecord(const GuardRecord& record)
     std::cout << std::hex << std::setw(8) << std::setfill('0') << record.elogId;
 
     std::cout << " | ";
-    std::optional<std::string> gReasonToStr = guardReasonToStr(record.errType);
-    std::cout << *gReasonToStr;
+    std::cout << guardReasonToStr(record.errType);
 
     std::cout << " | ";
     std::optional<std::string> physicalPath = getPhysicalPath(record.targetId);

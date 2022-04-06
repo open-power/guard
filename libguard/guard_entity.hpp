@@ -59,9 +59,11 @@ std::optional<std::string> pathTypeToString(const int pType);
  * @brief Return string value for corresponding guard reason
  *
  * @param[in] gReason guard reason
- * @return NULL else guard reason corresponding string
+ *
+ * @return "unknown" with the given guard reason if not found
+ *         else corresponding guard reason string.
  */
-std::optional<std::string> guardReasonToStr(const int gReason);
+std::string guardReasonToStr(const int gReason);
 
 } // namespace guard
 } // namespace openpower

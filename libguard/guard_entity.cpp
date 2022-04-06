@@ -58,14 +58,16 @@ std::optional<std::string> pathTypeToString(const int pType)
     return std::nullopt;
 }
 
-std::optional<std::string> guardReasonToStr(const int gReason)
+std::string guardReasonToStr(const int gReason)
 {
     auto i = guardreason.find(gReason);
     if (i != guardreason.end())
     {
         return i->second;
     }
-    return std::nullopt;
+    std::string unknownStr{"unknown [" + std::to_string(gReason) + "]"};
+
+    return unknownStr;
 }
 } // namespace guard
 } // namespace openpower
