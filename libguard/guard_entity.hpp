@@ -23,10 +23,10 @@ const static std::map<int, std::string> PathType = {{0x00, "notApplicable"},
                                                     {0x04, "power"}};
 
 using reason = std::map<int, std::string>;
-const static reason guardreason = {{0x00, "noReason"},      {0xD2, "manual"},
-                                   {0xE2, "unrecoverable"}, {0xE3, "fatal"},
-                                   {0xE6, "predictive"},    {0xE9, "power"},
-                                   {0xEA, "hypervisor"},    {0xEB, "reconfig"}};
+const static reason guardreason = {
+    {0x00, "noReason"},   {0xD2, "manual"},     {0xE2, "unrecoverable"},
+    {0xE3, "fatal"},      {0xE6, "predictive"}, {0xE9, "power"},
+    {0xEA, "hypervisor"}, {0xEB, "reconfig"},   {0xEC, "sticky_deconfig"}};
 
 /**
  * @brief Return entity path for the corresponding physical path
