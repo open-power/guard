@@ -85,6 +85,44 @@ void guardList(bool displayResolved)
     }
 }
 
+/**
+ * @brief This function is used to list out the ephemeral type records.
+ *
+ * @return NULL
+ *
+ * @note This function will list out both (unresolved and resolved) records.
+ */
+void guardListEphemeralRecords()
+{
+    auto records = getAll();
+    if (!records.size())
+    {
+        std::cout << "No Records to display" << std::endl;
+        return;
+    }
+
+    bool isHeaderPrinted = false;
+    for (const auto& record : records)
+    {
+        if (!isEphemeralType(record.errType))
+        {
+            continue;
+        }
+
+        if (!isHeaderPrinted)
+        {
+            printHeader();
+            isHeaderPrinted = true;
+        }
+        printRecord(record);
+    }
+
+    if (!isHeaderPrinted)
+    {
+        std::cout << "No ephemeral records to display" << std::endl;
+    }
+}
+
 void guardDelete(const uint32_t recordId)
 {
     clear(recordId);
@@ -128,6 +166,7 @@ int main(int argc, char** argv)
         bool listGuardRecords = false;
         bool clearAll = false;
         bool listResolvedGuardRecords = false;
+        bool listEphemeralRecords = false;
         bool invalidateAll = false;
         bool gversion = false;
 
@@ -144,6 +183,10 @@ int main(int argc, char** argv)
         app.add_flag("-r, --reset", clearAll, "Erase all the Guard records");
         app.add_flag("-a, --listresolvedrecords", listResolvedGuardRecords,
                      "List all the resolved Guard'ed resources")
+            ->group("");
+        app.add_flag("-e, --listEphemeralRecords", listEphemeralRecords,
+                     "List all the resolved and unresolved ephemeral Guard'ed "
+                     "resources")
             ->group("");
         app.add_flag("-v, --version", gversion, "Version of GUARD tool");
 
@@ -170,6 +213,10 @@ int main(int argc, char** argv)
         else if (listResolvedGuardRecords)
         {
             guardList(true);
+        }
+        else if (listEphemeralRecords)
+        {
+            guardListEphemeralRecords();
         }
         else if (invalidateAll)
         {
