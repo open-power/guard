@@ -170,16 +170,14 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType,
         {
             /**
              * - Ignore the existing record if resolved
-             * - Ignore ephemeral records (GARD_Reconfig and
-             *   GARD_Sticky_deconfig) since the assumption is the host
+             * - Ignore ephemeral records since the assumption is the host
              *   application created for their usage to support resource
              *   recovery and no one will create those types of records
              *   other than Hostboot and also they are using their own
              *   infrastructure for the guard operation, not the libguard.
              */
             if (existGuard.recordId == GUARD_RESOLVED ||
-                existGuard.errType == GARD_Reconfig ||
-                existGuard.errType == GARD_Sticky_deconfig)
+                isEphemeralType(existGuard.errType))
             {
                 lastPos++;
                 continue;
@@ -283,8 +281,7 @@ GuardRecords getAll(bool persistentTypeOnly)
     GuardFile file(guardFilePath);
     for_each_guard(file, pos, curRecord)
     {
-        if (persistentTypeOnly && (curRecord.errType == GARD_Reconfig ||
-                                   curRecord.errType == GARD_Sticky_deconfig))
+        if (persistentTypeOnly && isEphemeralType(curRecord.errType))
         {
             continue;
         }
