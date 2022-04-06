@@ -9,6 +9,36 @@
 using namespace std;
 using namespace openpower::guard;
 
+void printHeader()
+{
+    std::cout << "ID       | ERROR    |  Type  | Path " << std::endl;
+}
+
+void printRecord(const GuardRecord& record)
+{
+    std::cout << std::hex << std::setw(8) << std::setfill('0')
+              << record.recordId;
+
+    std::cout << " | ";
+    std::cout << std::hex << std::setw(8) << std::setfill('0') << record.elogId;
+
+    std::cout << " | ";
+    std::optional<std::string> gReasonToStr = guardReasonToStr(record.errType);
+    std::cout << *gReasonToStr;
+
+    std::cout << " | ";
+    std::optional<std::string> physicalPath = getPhysicalPath(record.targetId);
+    if (!physicalPath)
+    {
+        std::cout << "Unknown ";
+    }
+    else
+    {
+        std::cout << *physicalPath;
+    }
+    std::cout << std::endl;
+}
+
 void guardList(bool displayResolved)
 {
     // Don't get ephemeral records because those type records are not intended
@@ -41,34 +71,10 @@ void guardList(bool displayResolved)
         // one then we should not print header else user will get confused.
         if (!isHeaderPrinted)
         {
-            std::cout << "ID       | ERROR    |  Type  | Path " << std::endl;
+            printHeader();
             isHeaderPrinted = true;
         }
-
-        std::cout << std::hex << std::setw(8) << std::setfill('0')
-                  << elem.recordId;
-
-        std::cout << " | ";
-        std::cout << std::hex << std::setw(8) << std::setfill('0')
-                  << elem.elogId;
-
-        std::cout << " | ";
-        std::optional<std::string> gReasonToStr =
-            guardReasonToStr(elem.errType);
-        std::cout << *gReasonToStr;
-
-        std::cout << " | ";
-        std::optional<std::string> physicalPath =
-            getPhysicalPath(elem.targetId);
-        if (!physicalPath)
-        {
-            std::cout << "Unknown ";
-        }
-        else
-        {
-            std::cout << *physicalPath;
-        }
-        std::cout << std::endl;
+        printRecord(elem);
     }
 
     if (!isHeaderPrinted)
