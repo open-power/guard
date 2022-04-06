@@ -139,6 +139,16 @@ void libguard_init(bool enableDevtree = true);
  */
 const fs::path& getGuardFilePath();
 
+/**
+ * @brief Used to get to know whether the given guard type is
+ *        ephemeral or not.
+ *
+ * @param[in] recordType - The guard record type
+ *
+ * @return true if the given type is ephemeral else false.
+ */
+bool isEphemeralType(const uint8_t recordType);
+
 namespace utest
 {
 void setGuardFile(const fs::path& file);

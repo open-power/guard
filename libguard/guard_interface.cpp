@@ -81,6 +81,16 @@ const fs::path& getGuardFilePath()
     return guardFilePath;
 }
 
+bool isEphemeralType(const uint8_t recordType)
+{
+    if ((recordType == GARD_Reconfig) || (recordType == GARD_Sticky_deconfig))
+    {
+        return true;
+    }
+
+    return false;
+}
+
 bool isBlankRecord(const GuardRecord& guard)
 {
     GuardRecord blankRecord;
