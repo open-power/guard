@@ -434,6 +434,21 @@ void invalidateAll()
     }
 }
 
+bool checkWriteFlag()
+{
+    GuardFile file(guardFilePath);
+    GuardRecord_t guardRecord;
+    size_t headerFlagPos = 9;
+    file.read(headerPos, &guardRecord.iv_flags, sizeof(guardRecord.iv_flags));
+
+    if ((guardRecord.iv_flags & GARD_FLAG_MASK_PNOR_WRITE_IN_PROGRESS) ==
+        GARD_FLAG_PNOR_WRITE_IS_IN_PROGRESS)
+    {
+        return true;
+    }
+    return false;
+}
+
 void libguard_init(bool enableDevtree)
 {
     initialize();
