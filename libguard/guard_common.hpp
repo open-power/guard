@@ -143,15 +143,6 @@ struct EntityPath
         for (int i = 0, j = 1; i < pathElementsSize;
              i++, j += sizeof(PathElement))
         {
-            if ((rawData + j) == nullptr || (rawData + j + 1) == nullptr)
-            {
-                openpower::guard::log::guard_log(
-                    GUARD_ERROR,
-                    "Insufficient data for PathElement in given raw data");
-                throw InvalidEntityPath(
-                    "EntityPath conversion constructor failed");
-            }
-
             pathElements[i].targetType = rawData[j];
             pathElements[i].instance = rawData[j + 1];
         }
