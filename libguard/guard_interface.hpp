@@ -149,6 +149,13 @@ const fs::path& getGuardFilePath();
  */
 bool isEphemeralType(const uint8_t recordType);
 
+/**
+ * @brief Used to read the write flag of guard header
+ *
+ * @return true if bit is 0x00 else false.
+ */
+bool checkWriteFlag();
+
 namespace utest
 {
 void setGuardFile(const fs::path& file);
