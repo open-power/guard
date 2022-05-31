@@ -143,7 +143,7 @@ struct EntityPath
         for (int i = 0, j = 1; i < pathElementsSize;
              i++, j += sizeof(PathElement))
         {
-            if ((rawData + j) == nullptr || (rawData + j + 1) == nullptr)
+            if (*(rawData + j) == '\0' || *(rawData + j + 1) == '\0')
             {
                 openpower::guard::log::guard_log(
                     GUARD_ERROR,
