@@ -203,7 +203,8 @@ std::optional<EntityPath>
         return std::nullopt;
     }
 
-    return EntityPath(reinterpret_cast<uint8_t*>(g_physBinaryPath));
+    return EntityPath(reinterpret_cast<uint8_t*>(g_physBinaryPath),
+                      sizeof(g_physBinaryPath));
 }
 
 /**

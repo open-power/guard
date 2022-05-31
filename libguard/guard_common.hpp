@@ -119,39 +119,44 @@ struct EntityPath
         }
     }
 
-    EntityPath(const uint8_t* rawData)
+    EntityPath(const uint8_t* rawData, size_t maxBufSize)
     {
-        if (rawData == nullptr)
+        if (rawData == nullptr || maxBufSize == 0)
         {
             openpower::guard::log::guard_log(GUARD_ERROR,
                                              "Given raw data is empty");
             throw InvalidEntityPath("EntityPath conversion constructor failed");
         }
 
-        type_size = rawData[0];
-
-        uint8_t pathElementsSize = (type_size & 0x0F);
-        if (pathElementsSize > maxPathElements)
+        if (maxBufSize > sizeof(EntityPath))
         {
             openpower::guard::log::guard_log(
                 GUARD_ERROR,
-                "Size mismatch. Given path elements size[%d] max[%d]",
-                pathElementsSize, maxPathElements);
-            throw InvalidEntityPath("EntityPath conversion constructor failed");
+                "Size mismatch. Given buf size[%d] EntityPath sizeof[%d]",
+                maxBufSize, sizeof(EntityPath));
+            throw InvalidEntityPath(
+                "EntityPath initializer_list constructor failed");
+        }
+
+        type_size = rawData[0];
+
+        uint8_t pathElementsSize = (type_size & 0x0F);
+        size_t maxElements = ((maxBufSize - 1) / sizeof(PathElement));
+
+        if (pathElementsSize > maxElements)
+        {
+            openpower::guard::log::guard_log(
+                GUARD_ERROR,
+                "PathElement size %d max elements size %d mismatch "
+                "in given raw data",
+                pathElementsSize, maxElements);
+            throw InvalidEntityPath(
+                "EntityPath initializer_list constructor failed");
         }
 
         for (int i = 0, j = 1; i < pathElementsSize;
              i++, j += sizeof(PathElement))
         {
-            if (*(rawData + j) == '\0' || *(rawData + j + 1) == '\0')
-            {
-                openpower::guard::log::guard_log(
-                    GUARD_ERROR,
-                    "Insufficient data for PathElement in given raw data");
-                throw InvalidEntityPath(
-                    "EntityPath conversion constructor failed");
-            }
-
             pathElements[i].targetType = rawData[j];
             pathElements[i].instance = rawData[j + 1];
         }
