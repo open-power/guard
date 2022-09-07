@@ -16,14 +16,16 @@ void printHeader()
 
 void printRecord(const GuardRecord& record)
 {
-    std::cout << std::hex << std::setw(8) << std::setfill('0')
+    std::cout << "0x" << std::hex << std::setw(8) << std::setfill('0')
               << record.recordId;
 
     std::cout << " | ";
-    std::cout << std::hex << std::setw(8) << std::setfill('0') << record.elogId;
+    std::cout << "0x" << std::hex << std::setw(8) << std::setfill('0')
+              << record.elogId;
 
     std::cout << " | ";
-    std::cout << guardReasonToStr(record.errType);
+    std::cout << std::left << std::setfill(' ') << std::setw(15)
+              << guardReasonToStr(record.errType);
 
     std::cout << " | ";
     std::optional<std::string> physicalPath = getPhysicalPath(record.targetId);
