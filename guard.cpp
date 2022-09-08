@@ -11,13 +11,19 @@ using namespace openpower::guard;
 
 void printHeader()
 {
-    std::cout << "ID       | ERROR    |  Type  | Path " << std::endl;
+    std::cout << std::left << std::setfill(' ') << std::setw(10) << "ID";
+    std::cout << " | ";
+    std::cout << std::setfill(' ') << std::setw(10) << "ERROR";
+    std::cout << " | ";
+    std::cout << std::setfill(' ') << std::setw(15) << "Type";
+    std::cout << " | ";
+    std::cout << "Path" << std::endl;
 }
 
 void printRecord(const GuardRecord& record)
 {
-    std::cout << "0x" << std::hex << std::setw(8) << std::setfill('0')
-              << record.recordId;
+    std::cout << std::right << "0x" << std::hex << std::setw(8)
+              << std::setfill('0') << record.recordId;
 
     std::cout << " | ";
     std::cout << "0x" << std::hex << std::setw(8) << std::setfill('0')
