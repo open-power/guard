@@ -24,11 +24,8 @@ class TestGuardRecord : public ::testing::Test
     {
         char dirTemplate[] = "/tmp/FakeGuard.XXXXXX";
         auto dirPtr = mkdtemp(dirTemplate);
-        if (dirPtr == NULL)
-        {
-            throw std::bad_alloc();
-        }
-        guardDir = std::string(dirPtr);
+        ASSERT_NE(nullptr, dirPtr);
+        guardDir = dirPtr;
         fs::create_directories(guardDir);
         guardFile = guardDir;
         guardFile /= "GUARD";
@@ -46,6 +43,17 @@ class TestGuardRecord : public ::testing::Test
         fs::remove_all(guardDir);
     }
 
+    using retVals = std::tuple<openpower::guard::GuardRecords,
+                               std::optional<openpower::guard::EntityPath>>;
+    retVals LibGuardInit(const std::string& phyPath)
+    {
+        openpower::guard::libguard_init();
+        auto entityPath = openpower::guard::getEntityPath(phyPath);
+        EXPECT_NE(entityPath, std::nullopt);
+        openpower::guard::create(*entityPath);
+        return std::make_tuple(openpower::guard::getAll(), entityPath);
+    }
+
   protected:
     fs::path guardFile;
     std::string guardDir;
@@ -55,13 +63,8 @@ TEST_F(TestGuardRecord, CreateGuardRecord)
 {
     //! TODO need to test serial number and part number once device tree support
     //! is available.
-    openpower::guard::libguard_init();
-    std::string phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-0";
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(phyPath);
-    EXPECT_NE(entityPath, std::nullopt);
-    openpower::guard::create(*entityPath);
-    openpower::guard::GuardRecords records = openpower::guard::getAll();
+    auto [records, entityPath] =
+        LibGuardInit("/sys-0/node-0/proc-1/eq-0/fc-0/core-0");
     EXPECT_EQ(records.size(), 1);
     openpower::guard::GuardRecord record = records.at(0);
     EXPECT_EQ(record.targetId, entityPath);
@@ -69,12 +72,7 @@ TEST_F(TestGuardRecord, CreateGuardRecord)
 
 TEST_F(TestGuardRecord, ClearGuardGoodPathTest)
 {
-    openpower::guard::libguard_init();
-    std::string phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-0";
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(phyPath);
-    EXPECT_NE(entityPath, std::nullopt);
-    openpower::guard::create(*entityPath);
+    LibGuardInit("/sys-0/node-0/proc-1/eq-0/fc-0/core-0");
     openpower::guard::clearAll();
     openpower::guard::GuardRecords records = openpower::guard::getAll();
     EXPECT_EQ(records.size(), 0);
@@ -82,32 +80,21 @@ TEST_F(TestGuardRecord, ClearGuardGoodPathTest)
 
 TEST_F(TestGuardRecord, DeleteGuardGoodPathTest)
 {
-    openpower::guard::libguard_init();
-    std::string phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-0";
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-1";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/proc-0/eq-0/fc-0/core-0";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/proc-0/eq-0/fc-0/core-1";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
+    LibGuardInit("/sys-0/node-0/proc-1/eq-0/fc-0/core-0");
+    LibGuardInit("/sys-0/node-0/proc-1/eq-0/fc-0/core-1");
+    LibGuardInit("/sys-0/node-0/proc-0/eq-0/fc-0/core-0");
+    LibGuardInit("/sys-0/node-0/proc-0/eq-0/fc-0/core-1");
 
-    phyPath = "/sys-0/node-0/proc-0/eq-0/fc-0/core-0";
-    entityPath = openpower::guard::getEntityPath(phyPath);
+    auto entityPath = openpower::guard::getEntityPath(
+        "/sys-0/node-0/proc-0/eq-0/fc-0/core-0");
     openpower::guard::clear(*entityPath);
-    openpower::guard::GuardRecords records = openpower::guard::getAll();
-    bool isRecordDeleted = false;
-    for (int i = 0; i < (int)records.size(); i++)
+    auto records = openpower::guard::getAll();
+    auto isRecordDeleted = false;
+    for (const auto& record : records)
     {
-        openpower::guard::GuardRecord record = records.at(i);
         if (record.targetId == entityPath)
         {
-            EXPECT_EQ(record.recordId, 0xFFFFFFFF);
+            EXPECT_EQ(record.recordId, GUARD_RESOLVED);
             isRecordDeleted = true;
             break;
         }
@@ -126,122 +113,93 @@ TEST_F(TestGuardRecord, NegTestCaseEP)
 
 TEST_F(TestGuardRecord, NegTestCaseFullGuardFile)
 {
-    openpower::guard::libguard_init();
-    std::string phyPath = " ";
-    std::optional<openpower::guard::EntityPath> entityPath;
-    phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-1";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/proc-0/eq-0/fc-0/core-0";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/proc-0/eq-0/fc-0/core-1";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-0";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/dimm-1";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    EXPECT_THROW({ openpower::guard::create(*entityPath); },
+    LibGuardInit("/sys-0/node-0/proc-1/eq-0/fc-0/core-0");
+    LibGuardInit("/sys-0/node-0/proc-1/eq-0/fc-0/core-1");
+    LibGuardInit("/sys-0/node-0/proc-0/eq-0/fc-0/core-0");
+    LibGuardInit("/sys-0/node-0/proc-0/eq-0/fc-0/core-1");
+    LibGuardInit("/sys-0/node-0/proc-2/eq-0/fc-0/core-0");
+    std::string phyPath = "/sys-0/node-0/dimm-1";
+    auto entityPath = openpower::guard::getEntityPath(phyPath);
+    EXPECT_THROW(openpower::guard::create(*entityPath),
                  openpower::guard::exception::GuardFileOverFlowed);
 }
 
 TEST_F(TestGuardRecord, AlreadyGuardedTC)
 {
-    openpower::guard::libguard_init();
-    std::string physPath{"/sys-0/node-0/proc-0/eq-0/fc-0/core-0"};
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(physPath);
-    openpower::guard::create(*entityPath);
-
+    auto entityPath =
+        std::get<1>(LibGuardInit("/sys-0/node-0/proc-0/eq-0/fc-0/core-0"));
     // Trying to guard again with same entity
-    EXPECT_THROW({ openpower::guard::create(*entityPath); },
+    EXPECT_THROW(openpower::guard::create(*entityPath),
                  openpower::guard::exception::AlreadyGuarded);
 }
 
 TEST_F(TestGuardRecord, GetCreatedGuardRecordTC)
 {
-    openpower::guard::libguard_init();
-    std::string physPath{"/sys-0/node-0/proc-0/eq-0/fc-0/core-0"};
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(physPath);
-
-    openpower::guard::GuardRecord retGuardRecord =
-        openpower::guard::create(*entityPath);
+    auto [records, entityPath] =
+        LibGuardInit("/sys-0/node-0/proc-0/eq-0/fc-0/core-0");
 
     // Validate the return guard record
     // Note: Only one record created in this test case and also
     // by default created guard will be considered as Manual
     // so expectation will be like below.
-    EXPECT_EQ(retGuardRecord.recordId, 1);
-    EXPECT_EQ(retGuardRecord.targetId, entityPath);
-    EXPECT_EQ(retGuardRecord.elogId, 0);
-    EXPECT_EQ(retGuardRecord.errType,
-              openpower::guard::GardType::GARD_User_Manual);
+    EXPECT_EQ(records.size(), 1);
+    EXPECT_EQ(records[0].recordId, 1);
+    EXPECT_EQ(records[0].targetId, entityPath);
+    EXPECT_EQ(records[0].elogId, 0);
+    EXPECT_EQ(records[0].errType, openpower::guard::GardType::GARD_User_Manual);
 }
 
 TEST_F(TestGuardRecord, DeleteByEntityPath)
 {
-    openpower::guard::libguard_init();
-    std::string physPath{"/sys-0/node-0/proc-0/eq-0/fc-0/core-0"};
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(physPath);
-
-    openpower::guard::create(*entityPath);
-
+    auto [records, entityPath] =
+        LibGuardInit("/sys-0/node-0/proc-0/eq-0/fc-0/core-0");
+    EXPECT_EQ(records.size(), 1);
+    EXPECT_NE(GUARD_RESOLVED, records[0].recordId);
     // Trying to delete
     openpower::guard::clear(*entityPath);
 
     // Make sure is deleted
-    openpower::guard::GuardRecords records = openpower::guard::getAll();
+    records.clear();
+    records = openpower::guard::getAll();
     EXPECT_EQ(records.size(), 1);
+    EXPECT_EQ(GUARD_RESOLVED, records[0].recordId);
 }
 
 TEST_F(TestGuardRecord, DeleteWithNotExistentEntity)
 {
-    openpower::guard::libguard_init();
-    std::string physPath{"/sys-0/node-0/proc-0/eq-0/fc-0/core-0"};
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(physPath);
+    auto entityPath =
+        std::get<1>(LibGuardInit("/sys-0/node-0/proc-0/eq-0/fc-0/core-0"));
 
+    std::string phyPath = "/sys-0/node-0/proc-0/eq-0/fc-0/core-1";
+    entityPath = openpower::guard::getEntityPath(phyPath);
     // Trying to delete entity which is not present
-    EXPECT_THROW({ openpower::guard::clear(*entityPath); },
+    EXPECT_THROW(openpower::guard::clear(*entityPath),
                  openpower::guard::exception::InvalidEntityPath);
 }
 
 TEST_F(TestGuardRecord, DeleteByRecordId)
 {
-    openpower::guard::libguard_init();
-    std::string physPath{"/sys-0/node-0/proc-0/eq-0/fc-0/core-0"};
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(physPath);
-
-    openpower::guard::GuardRecord retGuardRecord =
-        openpower::guard::create(*entityPath);
+    auto records =
+        std::get<0>(LibGuardInit("/sys-0/node-0/proc-0/eq-0/fc-0/core-0"));
+    EXPECT_EQ(records.size(), 1);
 
     // Trying to delete with returned record id
-    openpower::guard::clear(retGuardRecord.recordId);
+    openpower::guard::clear(records[0].recordId);
 
     // Make sure is deleted
-    openpower::guard::GuardRecords records = openpower::guard::getAll();
+    records = openpower::guard::getAll();
     EXPECT_EQ(records.size(), 1);
-    openpower::guard::GuardRecord record = records.at(0);
-    EXPECT_EQ(record.recordId, 0xFFFFFFFF);
+    EXPECT_EQ(records[0].recordId, GUARD_RESOLVED);
 }
 
 TEST_F(TestGuardRecord, DeleteWithNotExistentRecordId)
 {
-    openpower::guard::libguard_init();
-    std::string physPath{"/sys-0/node-0/proc-0/eq-0/fc-0/core-0"};
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(physPath);
-
-    openpower::guard::GuardRecord retGuardRecord =
-        openpower::guard::create(*entityPath);
+    auto records =
+        std::get<0>(LibGuardInit("/sys-0/node-0/proc-0/eq-0/fc-0/core-0"));
+    EXPECT_EQ(records.size(), 1);
 
     // Trying to delete a record by using returned record id with increment
-    EXPECT_THROW({ openpower::guard::clear(retGuardRecord.recordId + 1); },
+    EXPECT_THROW(openpower::guard::clear(records[0].recordId + 1),
                  openpower::guard::exception::InvalidEntityPath);
 }
 
@@ -276,44 +234,30 @@ TEST_F(TestGuardRecord, GetGuardFilePathWhenLibguradDidNotInitTC)
 
 TEST_F(TestGuardRecord, ClearGuardInvalidateAllPathTest)
 {
-    openpower::guard::libguard_init();
-    std::string phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-0";
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(phyPath);
-    EXPECT_NE(entityPath, std::nullopt);
-    openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/proc-1/eq-0/fc-0/core-1";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
+    LibGuardInit("/sys-0/node-0/proc-0/eq-0/fc-0/core-0");
+    LibGuardInit("/sys-0/node-0/proc-0/eq-0/fc-0/core-1");
     openpower::guard::invalidateAll();
-    openpower::guard::GuardRecords records = openpower::guard::getAll();
+    auto records = openpower::guard::getAll();
     EXPECT_EQ(records.size(), 2);
-    openpower::guard::GuardRecord record = records.at(0);
-    EXPECT_EQ(record.recordId, 0xFFFFFFFF);
+    auto record = records.at(0);
+    EXPECT_EQ(record.recordId, GUARD_RESOLVED);
     record = records.at(1);
-    EXPECT_EQ(record.recordId, 0xFFFFFFFF);
+    EXPECT_EQ(record.recordId, GUARD_RESOLVED);
 }
 
 TEST_F(TestGuardRecord, ClearResolvedGuardRecord)
 {
-    openpower::guard::libguard_init();
-    std::string phyPath = "/sys-0/node-0/dimm-0";
-    std::optional<openpower::guard::EntityPath> entityPath =
-        openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/dimm-1";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/dimm-2";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    phyPath = "/sys-0/node-0/dimm-3";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    openpower::guard::clear(*entityPath);
-    phyPath = "/sys-0/node-0/dimm-4";
-    entityPath = openpower::guard::getEntityPath(phyPath);
-    openpower::guard::create(*entityPath);
-    openpower::guard::GuardRecords records = openpower::guard::getAll();
+    LibGuardInit("/sys-0/node-0/dimm-0");
+    LibGuardInit("/sys-0/node-0/dimm-1");
+    LibGuardInit("/sys-0/node-0/dimm-2");
+    auto [records, entityPath] = LibGuardInit("/sys-0/node-0/dimm-3");
     EXPECT_EQ(records.size(), 4);
+    openpower::guard::clear(*entityPath);
+    records = openpower::guard::getAll();
+    EXPECT_EQ(records.size(), 4);
+    EXPECT_EQ(GUARD_RESOLVED, records[3].recordId);
+    records = std::get<0>(LibGuardInit("/sys-0/node-0/dimm-4"));
+    EXPECT_EQ(records.size(), 5);
+    EXPECT_EQ(GUARD_RESOLVED, records[3].recordId);
+    EXPECT_NE(GUARD_RESOLVED, records[4].recordId);
 }
