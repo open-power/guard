@@ -25,7 +25,7 @@ conf_data.set_quoted('GUARD_PRSV_PATH', get_option('GUARD_PRSV_PATH'),
                       description : 'GUARD file that is preserved'
                     )
 
-conf_data.set_quoted('GUARD_VERSION', 'v1.0',
+conf_data.set_quoted('GUARD_VERSION', 'v2.0',
               description : 'Setting guard tool version'
              )
 
