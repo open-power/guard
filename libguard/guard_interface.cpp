@@ -391,6 +391,18 @@ void invalidateAll()
     {
         for_each_guard(file, pos, existGuard)
         {
+            std::optional<std::string> physicalPath =
+                getPhysicalPath(existGuard.targetId);
+            // Finding cores(both fused core and core) by looking at path
+            // (sys-*/node-*/proc-*/eq*/fc-*[/core-*])
+            if (physicalPath.has_value() &&
+                physicalPath.value().find("fc") != std::string::npos)
+            {
+                // There is a requirement to exclude cores when delete all
+                // deconfiguration records is attempted from GUI as well as CLI.
+                // This change is made as a part of spare core support.
+                continue;
+            }
             offset = pos * sizeof(existGuard);
             existGuard.recordId = GUARD_RESOLVED;
             file.write(offset + headerSize, &existGuard, sizeof(existGuard));
