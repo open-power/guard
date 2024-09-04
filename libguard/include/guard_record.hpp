@@ -77,6 +77,7 @@ struct GuardRecord_t
 enum GardType
 {
     GARD_NULL = 0x00,
+    GARD_Spare = 0xC0,
     GARD_User_Manual = 0xD2,
     GARD_Unrecoverable = 0xE2,
     GARD_Fatal = 0xE3,
