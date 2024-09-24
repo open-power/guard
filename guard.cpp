@@ -184,7 +184,8 @@ int main(int argc, char** argv)
             "-i, --invalidate", recordId,
             "Invalidate a single Guard record, expects record id as input");
         app.add_flag("-I, --invalidate-all", invalidateAll,
-                     "Invalidates all the Guard records");
+                     "Invalidates all the Guard records other than the core "
+                     "Guard records");
         app.add_flag("-l, --list", listGuardRecords,
                      "List all the Guard'ed resources");
         app.add_flag("-r, --reset", clearAll, "Erase all the Guard records");
