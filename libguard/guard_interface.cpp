@@ -142,6 +142,43 @@ static GuardRecord getHostEndiannessRecord(const GuardRecord& record)
     return convertedRecord;
 }
 
+/**
+ * @brief Function to set/reset write flag in guard header
+ *
+ * @param[in] GuardFile Guard file path
+ * @param[in] reset true if writing the guard record
+ *                  false to set the guard write flag
+ *
+ */
+void toggleWriteFlag(GuardFile& file, const bool reset = true)
+{
+    GuardRecord_t guardRecord;
+    constexpr size_t headerFlagPos = 9;
+    file.read(headerFlagPos, &guardRecord.iv_flags,
+              sizeof(guardRecord.iv_flags));
+    uint8_t current_value =
+        guardRecord.iv_flags & GARD_FLAG_MASK_PNOR_WRITE_IN_PROGRESS;
+
+    if (reset && current_value == GARD_FLAG_MASK_PNOR_WRITE_IN_PROGRESS)
+    {
+        // Resetting write bit in guard header
+        guardRecord.iv_flags =
+            guardRecord.iv_flags & GARD_FLAG_PNOR_WRITE_IS_IN_PROGRESS;
+    }
+    else if (!reset && current_value == GARD_FLAG_PNOR_WRITE_IS_IN_PROGRESS)
+    {
+        // Setting write bit in guard header once guard record is written.
+        guardRecord.iv_flags = GARD_FLAG_PNOR_WRITE_NOT_IN_PROGRESS;
+    }
+    else if (reset && current_value == GARD_FLAG_PNOR_WRITE_IS_IN_PROGRESS)
+    {
+        guardRecord.iv_flags = GARD_FLAG_PNOR_WRITE_IS_IN_PROGRESS;
+    }
+
+    file.write(headerFlagPos, &guardRecord.iv_flags,
+               sizeof(guardRecord.iv_flags));
+}
+
 #define for_each_guard(file, pos, guard)                                       \
     for (pos = guardNext(file, 0, guard); pos >= 0;                            \
          pos = guardNext(file, ++pos, guard))
@@ -165,6 +202,7 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType,
     memset(&existGuard, 0xff, sizeOfGuard);
 
     GuardFile file(guardFilePath);
+    toggleWriteFlag(file);
     for_each_guard(file, pos, existGuard)
     {
         // Storing the oldest resolved guard record position.
@@ -228,6 +266,7 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType,
                     "Already guard record is available in the GUARD partition");
                 throw AlreadyGuarded("Guard record is already exist");
             }
+            toggleWriteFlag(file, false);
             return getHostEndiannessRecord(existGuard);
         }
 
@@ -276,7 +315,7 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType,
     memset(guard.u.s1.partNum, 0, sizeof(guard.u.s1.partNum));
 #endif
     file.write(offset + headerSize, &guard, sizeOfGuard);
-
+    toggleWriteFlag(file, false);
     return getHostEndiannessRecord(guard);
 }
 
@@ -340,10 +379,12 @@ static void invalidateRecord(const guardRecordParam& value)
              (existGuard.targetId == entityPath)) &&
             (existGuard.recordId != GUARD_RESOLVED))
         {
+            toggleWriteFlag(file);
             offset = pos * sizeof(existGuard);
             existGuard.recordId = GUARD_RESOLVED;
             file.write(offset + headerSize, &existGuard, sizeof(existGuard));
             found = true;
+            toggleWriteFlag(file, false);
             break;
         }
     }
@@ -389,6 +430,7 @@ void invalidateAll()
     }
     else
     {
+        toggleWriteFlag(file);
         for_each_guard(file, pos, existGuard)
         {
             std::optional<std::string> physicalPath =
@@ -407,7 +449,23 @@ void invalidateAll()
             existGuard.recordId = GUARD_RESOLVED;
             file.write(offset + headerSize, &existGuard, sizeof(existGuard));
         }
+        toggleWriteFlag(file, false);
     }
+}
+
+bool checkWriteFlag()
+{
+    GuardFile file(guardFilePath);
+    GuardRecord_t guardRecord;
+    size_t headerFlagPos = 9;
+    file.read(headerPos, &guardRecord.iv_flags, sizeof(guardRecord.iv_flags));
+
+    if ((guardRecord.iv_flags & GARD_FLAG_MASK_PNOR_WRITE_IN_PROGRESS) ==
+        GARD_FLAG_PNOR_WRITE_IS_IN_PROGRESS)
+    {
+        return true;
+    }
+    return false;
 }
 
 void libguard_init(bool enableDevtree)

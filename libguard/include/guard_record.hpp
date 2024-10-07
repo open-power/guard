@@ -14,6 +14,18 @@ namespace guard
 const uint8_t CURRENT_GARD_VERSION_LAYOUT = 0x2;
 #define GUARD_RESOLVED 0xFFFFFFFF
 
+enum GardFlags : uint8_t
+{
+    GARD_FLAG_MASK_PNOR_WRITE_IN_PROGRESS = 0x01,
+    GARD_FLAGS_DEFAULT = 0xFF
+};
+
+enum GardFlagPnorWriteInProgress : uint8_t
+{
+    GARD_FLAG_PNOR_WRITE_IS_IN_PROGRESS = 0x00,
+    GARD_FLAG_PNOR_WRITE_NOT_IN_PROGRESS = 0x01
+};
+
 #ifdef PGUARD
 /* From hostboot: src/include/usr/hwas/common/deconfigGard.H:GuardRecord */
 struct GuardRecord
@@ -67,9 +79,10 @@ struct GuardRecord
 
 struct GuardRecord_t
 {
-    uint8_t iv_magicNumber[8];    ///< GUARDREC
-    uint8_t iv_version;           ///< Guard records version
-    uint8_t iv_padding[7];        ///< Padding
+    uint8_t iv_magicNumber[8]; ///< GUARDREC
+    uint8_t iv_version;        ///< Guard records version
+    uint8_t iv_flags;          ///< Gard flags (see the GardFlags enumeration)
+    uint8_t iv_padding[6];     ///< Padding
     GuardRecord* iv_guardRecords; ///< List of guard records
 };
 
