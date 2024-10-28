@@ -14,7 +14,7 @@ namespace exception
 class GuardException : public std::exception
 {
   public:
-    explicit GuardException(const std::string& message) : message(message){};
+    explicit GuardException(const std::string& message) : message(message) {};
 
     const char* what() const noexcept override
     {
@@ -28,61 +28,60 @@ class GuardException : public std::exception
 class InvalidGuardFile : public GuardException
 {
   public:
-    explicit InvalidGuardFile(const std::string& msg) :
-        GuardException(msg){};
+    explicit InvalidGuardFile(const std::string& msg) : GuardException(msg) {};
 };
 
 class GuardFileOpenFailed : public GuardException
 {
   public:
     explicit GuardFileOpenFailed(const std::string& msg) :
-        GuardException(msg){};
+        GuardException(msg) {};
 };
 
 class GuardFileReadFailed : public GuardException
 {
   public:
     explicit GuardFileReadFailed(const std::string& msg) :
-        GuardException(msg){};
+        GuardException(msg) {};
 };
 
 class GuardFileWriteFailed : public GuardException
 {
   public:
     explicit GuardFileWriteFailed(const std::string& msg) :
-        GuardException(msg){};
+        GuardException(msg) {};
 };
 
 class GuardFileSeekFailed : public GuardException
 {
   public:
     explicit GuardFileSeekFailed(const std::string& msg) :
-        GuardException(msg){};
+        GuardException(msg) {};
 };
 
 class InvalidEntry : public GuardException
 {
   public:
-    explicit InvalidEntry(const std::string& msg) : GuardException(msg){};
+    explicit InvalidEntry(const std::string& msg) : GuardException(msg) {};
 };
 
 class AlreadyGuarded : public GuardException
 {
   public:
-    explicit AlreadyGuarded(const std::string& msg) : GuardException(msg){};
+    explicit AlreadyGuarded(const std::string& msg) : GuardException(msg) {};
 };
 
 class InvalidEntityPath : public GuardException
 {
   public:
-    explicit InvalidEntityPath(const std::string& msg) : GuardException(msg){};
+    explicit InvalidEntityPath(const std::string& msg) : GuardException(msg) {};
 };
 
 class GuardFileOverFlowed : public GuardException
 {
   public:
     explicit GuardFileOverFlowed(const std::string& msg) :
-        GuardException(msg){};
+        GuardException(msg) {};
 };
 
 } // namespace exception

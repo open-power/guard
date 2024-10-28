@@ -29,7 +29,6 @@ const static reason guardreason = {
     {0xE9, "power"},          {0xEA, "hypervisor"}, {0xEB, "reconfig"},
     {0xEC, "sticky_deconfig"}};
 
-
 /**
  * @brief Return entity path for the corresponding physical path
  *

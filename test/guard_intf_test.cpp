@@ -143,8 +143,9 @@ TEST_F(TestGuardRecord, NegTestCaseFullGuardFile)
     openpower::guard::create(*entityPath);
     phyPath = "/sys-0/node-0/dimm-1";
     entityPath = openpower::guard::getEntityPath(phyPath);
-    EXPECT_THROW({ openpower::guard::create(*entityPath); },
-                 openpower::guard::exception::GuardFileOverFlowed);
+    EXPECT_THROW(
+        { openpower::guard::create(*entityPath); },
+        openpower::guard::exception::GuardFileOverFlowed);
 }
 
 TEST_F(TestGuardRecord, AlreadyGuardedTC)
@@ -156,8 +157,9 @@ TEST_F(TestGuardRecord, AlreadyGuardedTC)
     openpower::guard::create(*entityPath);
 
     // Trying to guard again with same entity
-    EXPECT_THROW({ openpower::guard::create(*entityPath); },
-                 openpower::guard::exception::AlreadyGuarded);
+    EXPECT_THROW(
+        { openpower::guard::create(*entityPath); },
+        openpower::guard::exception::AlreadyGuarded);
 }
 
 TEST_F(TestGuardRecord, GetCreatedGuardRecordTC)
@@ -206,8 +208,9 @@ TEST_F(TestGuardRecord, DeleteWithNotExistentEntity)
         openpower::guard::getEntityPath(physPath);
 
     // Trying to delete entity which is not present
-    EXPECT_THROW({ openpower::guard::clear(*entityPath); },
-                 openpower::guard::exception::InvalidEntityPath);
+    EXPECT_THROW(
+        { openpower::guard::clear(*entityPath); },
+        openpower::guard::exception::InvalidEntityPath);
 }
 
 TEST_F(TestGuardRecord, DeleteByRecordId)
@@ -241,8 +244,9 @@ TEST_F(TestGuardRecord, DeleteWithNotExistentRecordId)
         openpower::guard::create(*entityPath);
 
     // Trying to delete a record by using returned record id with increment
-    EXPECT_THROW({ openpower::guard::clear(retGuardRecord.recordId + 1); },
-                 openpower::guard::exception::InvalidEntityPath);
+    EXPECT_THROW(
+        { openpower::guard::clear(retGuardRecord.recordId + 1); },
+        openpower::guard::exception::InvalidEntityPath);
 }
 
 TEST_F(TestGuardRecord, GetGuardFilePathTC)
@@ -261,8 +265,9 @@ TEST_F(TestGuardRecord, GetGuardFilePathWhenLibguradDidNotInitTC)
     openpower::guard::utest::setGuardFile("");
 
     // Checking without libguard_init() call.
-    EXPECT_THROW({ openpower::guard::getGuardFilePath(); },
-                 openpower::guard::exception::GuardFileOpenFailed);
+    EXPECT_THROW(
+        { openpower::guard::getGuardFilePath(); },
+        openpower::guard::exception::GuardFileOpenFailed);
 
     // Set the guard file since UT reached the end
     openpower::guard::utest::setGuardFile(guardFile);

@@ -280,13 +280,11 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType,
     return getHostEndiannessRecord(guard);
 }
 
-
-GuardRecord create(std::vector<uint8_t> rawPath, uint32_t eId,
-                   uint8_t eType,
+GuardRecord create(std::vector<uint8_t> rawPath, uint32_t eId, uint8_t eType,
                    bool overwriteRecord)
 {
-    return create(EntityPath(rawPath.data(), rawPath.size()), eId,
-    eType, overwriteRecord);
+    return create(EntityPath(rawPath.data(), rawPath.size()), eId, eType,
+                  overwriteRecord);
 }
 
 GuardRecords getAll(bool persistentTypeOnly)
