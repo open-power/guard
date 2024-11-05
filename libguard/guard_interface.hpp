@@ -47,7 +47,8 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId = 0,
  *          based on the given "overwriteRecord" flag if that's meets
  *          a certain conditions that are defined in this function.
  *
- * @param[in] rawPathData entity path of the resource to be guarded as unit8 vector
+ * @param[in] rawPathData entity path of the resource to be guarded as unit8
+ * vector
  * @param[in] eId errorlog ID
  * @param[in] eType errorlog type
  * @param[in] overwriteRecord used to decide overwrite existing record
