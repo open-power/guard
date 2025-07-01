@@ -176,6 +176,15 @@ const fs::path& getGuardFilePath();
  */
 bool isEphemeralType(const uint8_t recordType);
 
+/**
+ * @brief Used to get to know whether the given guard is for core
+ *
+ * @param[in] entityPath - The entity path of the guard record
+ *
+ * @return true if the given record belongs to that of a core
+ */
+bool isCore(const EntityPath& entityPath);
+
 namespace utest
 {
 void setGuardFile(const fs::path& file);
