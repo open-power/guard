@@ -77,6 +77,12 @@ class InvalidEntityPath : public GuardException
     explicit InvalidEntityPath(const std::string& msg) : GuardException(msg) {};
 };
 
+class CannotDelete : public GuardException
+{
+  public:
+    explicit CannotDelete(const std::string& msg) : GuardException(msg) {};
+};
+
 class GuardFileOverFlowed : public GuardException
 {
   public:
