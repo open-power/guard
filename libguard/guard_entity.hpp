@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 #include "guard_common.hpp"
-
+#include <attributes_info.H>
 #include <map>
 
 namespace openpower
@@ -65,6 +65,29 @@ std::optional<std::string> pathTypeToString(const int pType);
  *         else corresponding guard reason string.
  */
 std::string guardReasonToStr(const int gReason);
+
+/**
+ * @brief get the target type based as per type defined in attributes_info.H
+ *
+ * @param[in] entityPath The entity path struct
+ *
+ * @return "ATTR_TYPE_Enum" respective enum value of the target
+ */
+ATTR_TYPE_Enum getTargetType(const EntityPath& entityPath);
+
+/**
+ * @brief Returns true if it is a core or fc
+ *
+ * @param[in] const targetType the target type as per attrbutes_info.H
+ *
+ * @return bool value - true if it is core
+ *                      false if any other target type
+ */
+inline bool isCore(const ATTR_TYPE_Enum targetType)
+{
+    return( (targetType == ENUM_ATTR_TYPE_CORE) || 
+    (targetType == ENUM_ATTR_TYPE_FC) );
+}
 
 } // namespace guard
 } // namespace openpower

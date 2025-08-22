@@ -99,7 +99,7 @@ GuardRecords getAll(bool persistentTypeOnly = false);
  * array of uint8_t buffer and conversion constructor automatically will take
  * care conversion from raw data to EntityPath.
  */
-void clear(const EntityPath& entityPath);
+void clear(const EntityPath& entityPath, bool forceClear = false);
 
 /**
  * @brief Clear the guard record based on given record id
@@ -114,7 +114,7 @@ void clear(const EntityPath& entityPath);
  *         -GuardFileReadFailed
  *
  */
-void clear(const uint32_t recordId);
+void clear(const uint32_t recordId, bool forceClear = false);
 
 /**
  * @brief Clear all the guard records

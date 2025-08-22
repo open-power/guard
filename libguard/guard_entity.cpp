@@ -69,5 +69,20 @@ std::string guardReasonToStr(const int gReason)
 
     return unknownStr;
 }
+
+ATTR_TYPE_Enum getTargetType(const EntityPath& entityPath)
+{
+    const int numOfElements = entityPath.type_size & 0x0f;
+    ATTR_TYPE_Enum targetTypeEnum = ENUM_ATTR_TYPE_NA;
+    if(numOfElements >= 1)
+    {
+        //point to the last element
+        targetTypeEnum = 
+            static_cast<ATTR_TYPE_Enum>(entityPath.pathElements[numOfElements-1].targetType);
+    }
+
+    return targetTypeEnum;
+}
+
 } // namespace guard
 } // namespace openpower

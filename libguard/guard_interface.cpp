@@ -17,6 +17,8 @@
 #include <cstring>
 #include <variant>
 
+#include <attributes_info.H>
+
 namespace openpower
 {
 namespace guard
@@ -317,7 +319,7 @@ GuardRecords getAll(bool persistentTypeOnly)
  * 		   -InvalidEntityPath
  *
  */
-static void invalidateRecord(const guardRecordParam& value)
+static void invalidateRecord(const guardRecordParam& value, bool forceClear)
 {
     int pos = 0;
     GuardRecord existGuard;
@@ -347,6 +349,17 @@ static void invalidateRecord(const guardRecordParam& value)
              (existGuard.targetId == entityPath)) &&
             (existGuard.recordId != GUARD_RESOLVED))
         {
+            const ATTR_TYPE_Enum targetType = openpower::guard::getTargetType(existGuard.targetId);
+
+            // throw exception only if not forceClear AND 
+            //it's not a deletable type (manual or core guard)
+            if (!forceClear &&
+                !(openpower::guard::isCore(targetType) ||
+                existGuard.errType == GARD_User_Manual))
+            {
+                throw CannotDelete("Cannot delete a non-core system generated guard record");
+            }
+
             offset = pos * sizeof(existGuard);
             existGuard.recordId = GUARD_RESOLVED;
             file.write(offset + headerSize, &existGuard, sizeof(existGuard));
@@ -362,16 +375,16 @@ static void invalidateRecord(const guardRecordParam& value)
     }
 }
 
-void clear(const EntityPath& entityPath)
+void clear(const EntityPath& entityPath, bool forceClear)
 {
     auto path = entityPath;
-    invalidateRecord(path);
+    invalidateRecord(path, forceClear);
 }
 
-void clear(const uint32_t recordId)
+void clear(const uint32_t recordId, bool forceClear)
 {
     auto id = recordId;
-    invalidateRecord(id);
+    invalidateRecord(id, forceClear);
 }
 
 void clearAll()
@@ -398,12 +411,8 @@ void invalidateAll()
     {
         for_each_guard(file, pos, existGuard)
         {
-            std::optional<std::string> physicalPath =
-                getPhysicalPath(existGuard.targetId);
-            // Finding cores(both fused core and core) by looking at path
-            // (sys-*/node-*/proc-*/eq*/fc-*[/core-*])
-            if (physicalPath.has_value() &&
-                physicalPath.value().find("fc") != std::string::npos)
+            const ATTR_TYPE_Enum targetType = openpower::guard::getTargetType(existGuard.targetId);
+            if(openpower::guard::isCore(targetType))
             {
                 // There is a requirement to exclude cores when delete all
                 // deconfiguration records is attempted from GUI as well as CLI.

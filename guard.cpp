@@ -132,7 +132,7 @@ void guardListEphemeralRecords()
 
 void guardDelete(const uint32_t recordId)
 {
-    clear(recordId);
+    clear(recordId, true);
 }
 
 void guardClear()
