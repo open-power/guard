@@ -194,7 +194,7 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType,
             else if (overwriteRecord)
             {
                 if ((existGuard.errType == GARD_User_Manual) &&
-                    ((eType == GARD_Fatal) || (eType == GARD_Predictive)))
+                    ((eType == GARD_Fatal) || (eType == GARD_Predictive) || (eType == GARD_Unrecoverable)))
                 {
                     // Override the existing manual guard if the given record
                     // type is Fatal or Predictive
@@ -204,7 +204,7 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType,
                     file.write(offset + headerSize, &existGuard, sizeOfGuard);
                 }
                 else if ((existGuard.errType == GARD_Predictive) &&
-                         (eType == GARD_Fatal))
+                        ((eType == GARD_Fatal) || (eType == GARD_Unrecoverable)))
                 {
                     // Override the existing Predictive guard if the given
                     // record type is Fatal
