@@ -14,10 +14,10 @@
 #include "phal_devtree.hpp"
 #endif /* DEV_TREE */
 
+#include <attributes_info.H>
+
 #include <cstring>
 #include <variant>
-
-#include <attributes_info.H>
 
 namespace openpower
 {
@@ -194,7 +194,8 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType,
             else if (overwriteRecord)
             {
                 if ((existGuard.errType == GARD_User_Manual) &&
-                    ((eType == GARD_Fatal) || (eType == GARD_Predictive)))
+                    ((eType == GARD_Fatal) || (eType == GARD_Predictive) ||
+                     (eType == GARD_Unrecoverable)))
                 {
                     // Override the existing manual guard if the given record
                     // type is Fatal or Predictive
@@ -204,7 +205,8 @@ GuardRecord create(const EntityPath& entityPath, uint32_t eId, uint8_t eType,
                     file.write(offset + headerSize, &existGuard, sizeOfGuard);
                 }
                 else if ((existGuard.errType == GARD_Predictive) &&
-                         (eType == GARD_Fatal))
+                         ((eType == GARD_Fatal) ||
+                          (eType == GARD_Unrecoverable)))
                 {
                     // Override the existing Predictive guard if the given
                     // record type is Fatal
@@ -349,15 +351,16 @@ static void invalidateRecord(const guardRecordParam& value, bool forceClear)
              (existGuard.targetId == entityPath)) &&
             (existGuard.recordId != GUARD_RESOLVED))
         {
-            const ATTR_TYPE_Enum targetType = openpower::guard::getTargetType(existGuard.targetId);
+            const ATTR_TYPE_Enum targetType =
+                openpower::guard::getTargetType(existGuard.targetId);
 
-            // throw exception only if not forceClear AND 
-            //it's not a deletable type (manual or core guard)
-            if (!forceClear &&
-                !(openpower::guard::isCore(targetType) ||
-                existGuard.errType == GARD_User_Manual))
+            // throw exception only if not forceClear AND
+            // it's not a deletable type (manual or core guard)
+            if (!forceClear && !(openpower::guard::isCore(targetType) ||
+                                 existGuard.errType == GARD_User_Manual))
             {
-                throw CannotDelete("Cannot delete a non-core system generated guard record");
+                throw CannotDelete(
+                    "Cannot delete a non-core system generated guard record");
             }
 
             offset = pos * sizeof(existGuard);
@@ -411,8 +414,9 @@ void invalidateAll()
     {
         for_each_guard(file, pos, existGuard)
         {
-            const ATTR_TYPE_Enum targetType = openpower::guard::getTargetType(existGuard.targetId);
-            if(openpower::guard::isCore(targetType))
+            const ATTR_TYPE_Enum targetType =
+                openpower::guard::getTargetType(existGuard.targetId);
+            if (openpower::guard::isCore(targetType))
             {
                 // There is a requirement to exclude cores when delete all
                 // deconfiguration records is attempted from GUI as well as CLI.
